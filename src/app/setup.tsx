@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Screen, Button, Chip } from '@/components/Primitives';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { getSettings } from '@/store/settings';
+import { canStartDebate, recordDebate, FREE_DAILY_LIMIT } from '@/store/usage';
 import { setPendingConfig } from '@/store/activeDebate';
 import { buildSegments } from '@/constants/format';
 import { JUDGE_VOICES } from '@/constants/voices';
@@ -57,6 +58,19 @@ export default function SetupScreen() {
     (!is2v2 || (!!a2Name.trim() && !!b2Name.trim() && !!teamAName.trim() && !!teamBName.trim()));
 
   const start = () => {
+    if (!canStartDebate()) {
+      Alert.alert(
+        'Daily limit reached',
+        `Free debates reset tomorrow (${FREE_DAILY_LIMIT}/day). For unlimited now, go Premium — or add your own Anthropic key in Settings.`,
+        [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Settings', onPress: () => router.push('/settings') },
+        ]
+      );
+      return;
+    }
+    recordDebate().catch(() => {});
+
     const fmt: DebateFormat = isFormal ? 'formal' : 'quick';
     const p2Side: 'for' | 'against' = p1Side === 'for' ? 'against' : 'for';
     // Voices are assigned silently (never shown in the UI) so speakers can't

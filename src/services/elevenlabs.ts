@@ -78,15 +78,3 @@ export async function speakText(text: string, voiceOverride?: string): Promise<v
     // best-effort cleanup
   }
 }
-
-/** Fetches the user's available ElevenLabs voices for the settings picker. */
-export async function fetchVoices(): Promise<{ voice_id: string; name: string }[]> {
-  const key = resolveKey('elevenLabsKey', process.env.EXPO_PUBLIC_ELEVENLABS_API_KEY);
-  if (!key) return [];
-  const res = await fetch('https://api.elevenlabs.io/v1/voices', {
-    headers: { 'xi-api-key': key },
-  });
-  if (!res.ok) return [];
-  const data = (await res.json()) as { voices?: { voice_id: string; name: string }[] };
-  return (data.voices ?? []).map((v) => ({ voice_id: v.voice_id, name: v.name }));
-}

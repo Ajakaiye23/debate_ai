@@ -136,8 +136,47 @@ was removed; keys come from `.env`.
   expo-image, expo-linear-gradient, expo-device), scripts/reset-project, start-lan.cmd, and
   stray log/marker files. UI polish pass on home screen + Primitives (glows, shadows, pressed
   scale).
-- See `OWNER_GUIDE.md` for the human-required launch checklist (incl. §4½ — booting the app
-  standalone without Expo Go via an EAS preview APK).
+- See `OWNER_GUIDE.md` for the human-required launch checklist (rewritten for an iPhone owner:
+  Part A = free Expo Go path, Part B = paid standalone via TestFlight).
+
+**Cost-control model (2026-07-08):** free tier is capped so the owner's key can't be drained.
+- `src/store/usage.ts` — per-day debate counter (local date rollover), `FREE_DAILY_LIMIT = 10`.
+  `canStartDebate()`/`recordDebate()` enforced in `setup.tsx` (paywall alert on cap). `initUsage()`
+  runs at startup after settings.
+- **Premium** (`settings.premium`, `purchasePremium`/`grantPremium` stubs) = unlimited debates +
+  ElevenLabs voices + no ads. ElevenLabs is now gated behind premium in `tts.ts` (non-premium
+  always gets the free device voice regardless of the `ttsEngine` setting).
+- **BYO Anthropic key** — Settings has a key field (`hasUserAnthropicKey()`); when set, `claude.ts`
+  calls Anthropic **directly with the user's key even if the proxy is configured**, and usage is
+  unlimited (their cost, not the owner's).
+- Settings screen: "Your plan" section (usage counter / Go Premium), BYO-key input, premium-gated
+  voice engine. RevenueCat now has two products (`premium`, `ad_free`) — see TODO_FORM §C2.
+
+**Ship-readiness pass (2026-07-08, round 3):**
+- `StartupScreen.tsx` — branded cold-launch intro (icon springs in w/ pulsing glow,
+  wordmark + "Enter the arena" fade up, auto-fades after 1.55s). Rendered as a non-blocking
+  overlay in `_layout` once fonts+settings are ready.
+- `ErrorBoundary.tsx` — catches render crashes app-wide, shows a recoverable screen with a
+  "Try again" reset instead of a white screen. Wraps the whole `Stack`.
+- **Debate screen was a trap** — no back button, swipe disabled, so a started debate could
+  only be finished. Added an X (quit) button + Android hardware-back handler, both confirming
+  before discarding, and both stopping the timer/recorder/STT cleanly.
+- Accessibility labels on all icon-only buttons (settings, history, leaderboard, quit, pause).
+- ESLint installed + `eslint.config.js` added (`npm run lint` now works).
+- `TODO_FORM.md` — fill-in form of everything the owner still needs to supply.
+  **Only ads + audio remain**; both are values/files, not code.
+
+**Native-feel + cleanup pass (2026-07-08):**
+- New `src/utils/haptics.ts` (tapLight / tapSelect / notifySuccess / notifyWarning). Wired into
+  the shared `Button`/`Chip` primitives (so every tap app-wide buzzes), home mode cards, history
+  rows, settings voice rows, debate turn-start + 10s warning, and results verdict reveal.
+- `_layout.tsx`: native `slide_from_right` transitions, full-screen swipe-back gesture, pink
+  header tint, no header shadow.
+- `Chip`/`Button` now scale on press; selected chips get a glow. Home screen: staggered
+  `FadeInDown` entrance on mode cards, hidden scroll indicator.
+- Dead code removed: `fetchVoices` (unused), unused theme tokens (`blue`/`tie`/`lose`),
+  `tools/key-setup.mjs` (orphaned — keys go in .env/Render now), and the settings-screen `Pill`
+  component (replaced by the shared `Chip`).
 
 **Built, compiles + bundles, but NOT runtime-tested** (need a phone / 2 devices / live keys):
 - On-device mic → Whisper, ElevenLabs voices (incl. formal cross-exam distinct voices)

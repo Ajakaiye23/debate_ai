@@ -12,6 +12,7 @@ export interface AppSettings {
   defaultTurnDuration: number; // seconds
   readTurnSummaries: boolean; // false = skip per-turn TTS (faster debates); final verdict is always read
   adFree: boolean; // true after the one-time "remove ads" purchase
+  premium: boolean; // unlimited debates + ElevenLabs voices + no ads
   ttsEngine: 'elevenlabs' | 'device'; // device = free built-in voice, instant + offline
 }
 
@@ -25,6 +26,7 @@ const DEFAULTS: AppSettings = {
   defaultTurnDuration: 30,
   readTurnSummaries: true,
   adFree: false,
+  premium: false,
   ttsEngine: 'elevenlabs',
 };
 
@@ -60,4 +62,9 @@ export function resolveKey(
   envValue: string | undefined
 ): string {
   return cache[field] || envValue || '';
+}
+
+/** True when the user has pasted their own Anthropic key (→ unlimited, their cost). */
+export function hasUserAnthropicKey(): boolean {
+  return cache.anthropicKey.trim().length > 0;
 }

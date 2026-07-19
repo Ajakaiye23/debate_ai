@@ -13,7 +13,6 @@ export const colors = {
   pink: '#FF5EE0', // PRIMARY — CTAs, mic, selected state, primary borders
   pinkPressed: '#CC44B0',
   sky: '#85C2FF', // SECONDARY accent — scores, info, timer fill
-  blue: '#6BA8FF', // deeper blue accent (sparingly)
   gold: '#FFD700', // winner highlight
   coral: '#FF6B8A', // danger — timer warning, errors
 
@@ -25,9 +24,7 @@ export const colors = {
   },
 
   // Semantic
-  win: '#44FF88',
-  lose: '#FF4545',
-  tie: '#FFD700',
+  win: '#44FF88', // round-winner badge
 
   // Hairline borders (with alpha)
   border: {

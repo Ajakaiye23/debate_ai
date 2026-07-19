@@ -5,6 +5,7 @@ import { Screen } from '@/components/Primitives';
 import { loadDebates } from '@/store/debateHistory';
 import { setLastSession, setLastSpokenVerdict } from '@/store/activeDebate';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
+import { tapLight } from '@/utils/haptics';
 import type { DebateSession } from '@/types/debate';
 
 const MODE_LABEL: Record<DebateSession['mode'], string> = {
@@ -24,6 +25,7 @@ export default function HistoryScreen() {
   );
 
   const open = (session: DebateSession) => {
+    tapLight();
     setLastSession(session);
     setLastSpokenVerdict(null); // don't auto-narrate old debates
     router.push('/results');

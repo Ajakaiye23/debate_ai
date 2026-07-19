@@ -1,126 +1,120 @@
 # DebateAI — What YOU need to do
 
-The app is built. These are the only things the code can't do for itself — they
-need your accounts, your card, or your phone. Do them top to bottom.
+The app is built. These steps need your accounts, your card, or your phone —
+the things code can't do for itself. Do them top to bottom.
 
 Only **one** API key matters: your **Anthropic key**. Everything else is optional.
 
+You're on **iPhone**, so this guide uses the iPhone path throughout.
+
 ---
 
-# PART A — Get it running (do this first)
+# PART A — Use it on your iPhone (free, ~30 min total)
 
 ## Step 1 — Make a fresh Anthropic key (5 min)
 
-An old key of yours leaked in a chat, so replace it.
+An old key of yours leaked in a chat once, so replace it.
 
 1. Go to **console.anthropic.com** → sign in → **API Keys**.
-2. Click **Create Key**, copy it.
-3. Delete the old key from that same page.
-
-Keep the new key handy for Step 2. Don't paste it anywhere public.
+2. Click **Create Key** and copy it somewhere safe.
+3. Delete the old key on that same page.
 
 ## Step 2 — Put the key on a free server (15 min)
 
-This is what lets the app talk to Claude without your key being inside the app.
+This lets the app talk to Claude without your key being buried inside the app.
+Your code is already on GitHub, so this is quick.
 
-1. Make sure your code is on GitHub. If you're not sure, tell me "push to GitHub"
-   and I'll do it.
-2. Go to **render.com** → sign up (free) → **New → Blueprint**.
-3. Connect your GitHub and pick the **debate_ai** repo. Render sets everything up
-   on its own.
-4. When it asks for environment variables, fill in **one**:
+1. Go to **render.com** → sign up (free) → **New → Blueprint**.
+2. Connect GitHub and pick the **debate_ai** repo. Render configures itself.
+3. When it asks for environment variables, fill in **only one**:
    - `ANTHROPIC_API_KEY` = your new key from Step 1
-   - (Leave `OPENAI_API_KEY` and `ELEVENLABS_API_KEY` blank — not needed.)
-5. Click **Deploy**. Wait ~2 min. You'll get a web address like
-   `https://debateai-proxy.onrender.com`.
-6. Open that address in your browser. If it says **"DebateAI proxy is running,"**
-   it worked.
+   - Leave the other two boxes blank.
+4. Click **Deploy** and wait ~2 minutes.
+5. It gives you a web address like `https://debateai-proxy.onrender.com`.
+   Open it in a browser — if it says **"DebateAI proxy is running,"** it worked.
+6. **Send me that address** and I'll connect the app to it. (One tiny edit — you
+   don't have to touch any code.)
 
-Tell me the address and I'll point the app at it (one small edit). Or do it
-yourself: in `debate_ai/.env`, set `EXPO_PUBLIC_PROXY_URL=` to that address.
+> The free server naps when unused, so the first debate after a quiet spell
+> takes ~30 seconds to wake up. Totally normal.
 
-> The free server "sleeps" when unused, so the very first debate after a quiet
-> spell takes ~30 seconds to wake up. Normal. Upgrade later if it bugs you.
+## Step 3 — Open it on your iPhone (10 min)
 
-## Step 3 — Put the real app on your phone (20 min, mostly waiting)
+1. On your iPhone, install **Expo Go** from the App Store (free).
+2. On your PC, double-click **`start.cmd`** in the project folder. A window opens
+   with a **QR code**.
+3. Open the iPhone **Camera** app, point it at the QR code, tap the banner.
+   DebateAI launches inside Expo Go.
 
-Right now you test through "Expo Go." This turns DebateAI into its own app with
-its own icon that works anywhere — no computer, no Expo Go.
+**You can now play full debates.** One note: in Expo Go, tap **"Type instead"**
+to enter arguments (spoken voice input needs the real app from Part B). Everything
+else — judging, scores, coaching, verdicts read aloud — works.
 
-1. Go to **expo.dev** → sign up (free).
-2. Open a terminal in the project and run these three lines:
-   ```
-   cd C:\Users\blkg2\debate_ai
-   set PATH=%CD%\nodejs;%PATH%
-   npx eas login
-   npx eas build --profile preview --platform android
-   ```
-3. It builds in the cloud (~15 min). When done it gives you a link.
-4. Open that link **on your Android phone** → download → install (allow
-   "install unknown apps" if it asks).
-
-Done — DebateAI is on your home screen. Redo step 3's `build` line whenever you
-want the latest changes on your phone.
-
-**That's it — the app is fully usable at this point.** Everything below is only
-if you want to publish it to the app stores or add multiplayer.
+Keep that `start.cmd` window open while you use it. Closing it disconnects the app.
 
 ---
 
-# PART B — Only if you want to publish to the app stores
+# PART B — Only if you want it as a real iPhone app (no PC, spoken voice)
 
-Do these in order. They cost money and take a few days for approvals, so start
-early.
+To get DebateAI as its own icon on your phone that works anywhere — and to unlock
+**spoken voice input** — Apple requires a paid developer account. There's no free
+way around this on iPhone.
 
-## Step 4 — Buy developer accounts
+## Step 4 — Apple Developer account ($99/year)
 
-- **Google Play**: $25, one time — play.google.com/console
-- **Apple** (only if you want iPhone): $99/year — developer.apple.com
+1. Go to **developer.apple.com** → enroll. It's $99/year and verifies your
+   identity (can take a day or two).
 
-Both verify your identity, which can take a day or two.
+## Step 5 — I build it, you install it via TestFlight
 
-## Step 5 — Screenshots + privacy policy
+Once you have the account:
+1. Sign up free at **expo.dev**.
+2. Tell me **"build the iPhone app"** — I'll walk you through the two commands
+   (you'll log in and answer a couple of prompts; Apple certificates are handled
+   automatically).
+3. Apple emails you a **TestFlight** link. Install the **TestFlight** app from the
+   App Store, tap the link, and DebateAI installs like a normal app.
 
-- Take a few screenshots on your phone (home screen, a debate, the results).
-- Tell me "host the privacy policy" — I'll get the required privacy-policy page
-  online for free and give you the link the stores ask for.
-
-## Step 6 — Ads and the $4.99 "remove ads" (optional money-makers)
-
-Only if you want ads. After Step 4:
-- **Ads**: sign up at admob.google.com, add the app, create one "Interstitial"
-  ad. Then tell me **"wire up AdMob"** and paste what it gives you.
-- **Remove-ads purchase**: sign up at revenuecat.com (free), then tell me
-  **"wire up RevenueCat"** and paste the keys.
-
-The code is already prepared for both — I just plug your IDs in.
-
-## Step 7 — Submit
-
-When you're ready, tell me **"submit to the stores"** and I'll walk you through
-the build-and-upload commands with you (Apple TestFlight + Google internal
-testing first, then public).
+That's a real, standalone app on your phone — no computer, no Expo Go, and spoken
+voice input works.
 
 ---
 
-# PART C — Only if you want online multiplayer
+# PART C — Only if you want to sell it on the App Store
 
-Multiplayer is built but untested. To turn it on:
+Do this after Part B. Tell me when you reach it and I'll handle the technical parts.
 
-1. **console.firebase.google.com** → Add project.
+1. **Screenshots** — take a few on your iPhone (home, a debate, results).
+2. **Privacy policy** — tell me **"host the privacy policy"** and I'll put the
+   required page online for free and give you the link Apple asks for.
+3. **Ads / the $4.99 "remove ads"** (optional income) — only if you want them:
+   - Ads: sign up at **admob.google.com**, then tell me **"wire up AdMob."**
+   - Purchase: sign up free at **revenuecat.com**, then tell me **"wire up
+     RevenueCat."**
+   - The code is already prepared for both — I just add your IDs.
+4. **Submit** — tell me **"submit to the App Store"** and I'll run the upload with
+   you (TestFlight first, then public review).
+
+---
+
+# PART D — Only if you want online multiplayer
+
+Multiplayer is built but untested. To switch it on:
+
+1. Go to **console.firebase.google.com** → Add project.
 2. Inside it: **Build → Realtime Database → Create**.
 3. **Project settings → Add app → Web** → copy the `apiKey` and `projectId`.
-4. Send those to me (or paste into `.env`: `EXPO_PUBLIC_FIREBASE_API_KEY`,
-   `EXPO_PUBLIC_FIREBASE_PROJECT_ID`, and the database URL).
-5. Needs two phones to actually test a match.
+4. Send those to me and I'll plug them in.
+5. Testing a real match needs two phones.
 
 ---
 
 ## Quick answers
 
-- **Which keys do I need?** Just the Anthropic one. That's it.
-- **What does a debate cost me?** About 10 cents.
-- **Do I need OpenAI or ElevenLabs?** No. On-device voice (both listening and
-  speaking) is free and built in. Add ElevenLabs later only if you want fancier
-  AI voices.
-- **Something's broken / I'm stuck.** Tell me which step and what you saw.
+- **Which key do I need?** Just the Anthropic one. About 10 cents per debate.
+- **Do I need OpenAI or ElevenLabs keys?** No. Voice (listening and speaking) is
+  free and built in. Add ElevenLabs later only if you want fancier AI voices.
+- **Can I use it without paying Apple?** Yes — Part A (Expo Go) is free and fully
+  playable; just type your arguments instead of speaking. Paying Apple is only for
+  a standalone app and spoken input.
+- **Stuck on a step?** Tell me the step number and what you saw.

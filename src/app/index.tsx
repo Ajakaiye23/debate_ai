@@ -1,8 +1,10 @@
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Primitives';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
+import { tapLight } from '@/utils/haptics';
 import type { DebateMode, DebateFormat } from '@/types/debate';
 
 const MODES: {
@@ -35,62 +37,82 @@ export default function HomeScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.push('/settings')} hitSlop={12}>
+          <Pressable
+            onPress={() => {
+              tapLight();
+              router.push('/settings');
+            }}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
+          >
             <Ionicons name="settings-outline" size={24} color={colors.text.secondary} />
           </Pressable>
         </View>
 
-        <View style={styles.hero}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.hero}>
           <Text style={styles.title}>DebateAI</Text>
           <View style={styles.titleRule} />
           <Text style={styles.tagline}>
             Speak your case. Claude judges. The verdict is read aloud.
           </Text>
-        </View>
+        </Animated.View>
 
         <Text style={styles.kicker}>Choose your arena</Text>
         <View style={{ gap: spacing.md }}>
-          {MODES.map((m) => (
-            <Pressable
-              key={m.title}
-              onPress={() =>
-                m.mode === 'multiplayer'
-                  ? router.push('/multiplayer')
-                  : router.push({
-                      pathname: '/setup',
-                      params: { mode: m.mode, ...(m.format ? { format: m.format } : {}) },
-                    })
-              }
-              style={({ pressed }) => [
-                styles.card,
-                pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
-              ]}
-            >
-              <View style={styles.iconWrap}>
-                <Ionicons name={m.icon} size={22} color={colors.pink} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.cardTitle}>{m.title}</Text>
-                <Text style={styles.cardSubtitle}>{m.subtitle}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.text.disabled} />
-            </Pressable>
+          {MODES.map((m, i) => (
+            <Animated.View key={m.title} entering={FadeInDown.delay(80 * i + 120).springify()}>
+              <Pressable
+                onPress={() => {
+                  tapLight();
+                  m.mode === 'multiplayer'
+                    ? router.push('/multiplayer')
+                    : router.push({
+                        pathname: '/setup',
+                        params: { mode: m.mode, ...(m.format ? { format: m.format } : {}) },
+                      });
+                }}
+                style={({ pressed }) => [
+                  styles.card,
+                  pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
+                ]}
+              >
+                <View style={styles.iconWrap}>
+                  <Ionicons name={m.icon} size={22} color={colors.pink} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.cardTitle}>{m.title}</Text>
+                  <Text style={styles.cardSubtitle}>{m.subtitle}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.text.disabled} />
+              </Pressable>
+            </Animated.View>
           ))}
         </View>
 
         <View style={styles.footerRow}>
           <Pressable
-            onPress={() => router.push('/history')}
+            onPress={() => {
+              tapLight();
+              router.push('/history');
+            }}
             style={({ pressed }) => [styles.historyBtn, pressed && { opacity: 0.85 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Debate history"
           >
             <Ionicons name="time-outline" size={18} color={colors.sky} />
             <Text style={styles.historyText}>History</Text>
           </Pressable>
           <Pressable
-            onPress={() => router.push('/leaderboard')}
+            onPress={() => {
+              tapLight();
+              router.push('/leaderboard');
+            }}
             style={({ pressed }) => [styles.historyBtn, pressed && { opacity: 0.85 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Leaderboard"
           >
             <Ionicons name="trophy-outline" size={18} color={colors.sky} />
             <Text style={styles.historyText}>Leaderboard</Text>

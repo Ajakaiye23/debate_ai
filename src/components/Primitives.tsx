@@ -1,6 +1,7 @@
 import { Pressable, Text, View, StyleSheet, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
+import { tapLight, tapSelect } from '@/utils/haptics';
 import { DuskBackground } from './DuskBackground';
 
 /** Root screen wrapper with the glowing Neon Dusk backdrop. */
@@ -37,9 +38,14 @@ export function Button({
   };
   const p = palette[variant];
 
+  const handlePress = () => {
+    if (!disabled) tapLight();
+    onPress();
+  };
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled}
       style={({ pressed }) => [
         styles.button,
@@ -49,7 +55,7 @@ export function Button({
           borderWidth: p.border ? 1 : 0,
           borderColor: p.border,
           opacity: pressed ? 0.9 : 1,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
+          transform: [{ scale: pressed ? 0.97 : 1 }],
         },
         style,
       ]}
@@ -69,15 +75,22 @@ export function Chip({
   selected: boolean;
   onPress: () => void;
 }) {
+  const handlePress = () => {
+    tapSelect();
+    onPress();
+  };
+
   return (
     <Pressable
-      onPress={onPress}
-      style={[
+      onPress={handlePress}
+      style={({ pressed }) => [
         styles.chip,
         {
           backgroundColor: selected ? colors.pink : colors.bg.elevated,
           borderColor: selected ? colors.pink : colors.border.pink,
+          transform: [{ scale: pressed ? 0.94 : 1 }],
         },
+        selected && styles.chipSelectedGlow,
       ]}
     >
       <Text
@@ -125,6 +138,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
+  },
+  chipSelectedGlow: {
+    shadowColor: colors.pink,
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   chipText: {
     fontSize: 14,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,13 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  BackHandler,
   Pressable,
   TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
+import { notifyWarning, tapLight } from '@/utils/haptics';
 import { Screen, Button } from '@/components/Primitives';
 import { TimerBar } from '@/components/TimerBar';
 import { ArgumentCard } from '@/components/ArgumentCard';
@@ -251,14 +252,45 @@ function DebateRunner({ config }: { config: NonNullable<ReturnType<typeof getPen
 
   // Warning haptic at 10s left while recording.
   useEffect(() => {
-    if (flowPhase === 'recording' && timer.timeLeft === 10) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-    }
+    if (flowPhase === 'recording' && timer.timeLeft === 10) notifyWarning();
   }, [flowPhase, timer.timeLeft]);
+
+  // Light tick the moment a turn goes live, so the speaker feels "go".
+  useEffect(() => {
+    if (flowPhase === 'recording') tapLight();
+  }, [flowPhase]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [debate.args.length, flowPhase]);
+
+  /** Abandon the debate. Confirms first — progress is lost. */
+  const confirmQuit = useCallback(() => {
+    timer.pause();
+    Alert.alert('Leave debate?', 'This debate will be discarded. Nothing is saved.', [
+      { text: 'Keep debating', style: 'cancel', onPress: () => timer.resume() },
+      {
+        text: 'Leave',
+        style: 'destructive',
+        onPress: () => {
+          timer.stop();
+          abortListening();
+          recorder.stopRecording().catch(() => {});
+          router.replace('/');
+        },
+      },
+    ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Android hardware back should confirm, not silently drop the debate.
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      confirmQuit();
+      return true; // we handled it
+    });
+    return () => sub.remove();
+  }, [confirmQuit]);
 
   const togglePause = () => {
     if (paused) {
@@ -285,11 +317,26 @@ function DebateRunner({ config }: { config: NonNullable<ReturnType<typeof getPen
     <Screen>
       <View style={styles.topBar}>
         <View style={styles.topRow}>
+          <Pressable
+            onPress={confirmQuit}
+            hitSlop={10}
+            style={styles.pauseBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Leave debate"
+          >
+            <Ionicons name="close" size={20} color={colors.text.secondary} />
+          </Pressable>
           <Text style={styles.topic} numberOfLines={2}>
             {config.topic}
           </Text>
           {pausable && (
-            <Pressable onPress={togglePause} hitSlop={10} style={styles.pauseBtn}>
+            <Pressable
+              onPress={togglePause}
+              hitSlop={10}
+              style={styles.pauseBtn}
+              accessibilityRole="button"
+              accessibilityLabel={paused ? 'Resume debate' : 'Pause debate'}
+            >
               <Ionicons name={paused ? 'play' : 'pause'} size={20} color={colors.sky} />
             </Pressable>
           )}

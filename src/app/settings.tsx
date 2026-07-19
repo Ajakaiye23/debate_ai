@@ -1,13 +1,21 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
-import { Screen, Button } from '@/components/Primitives';
+import { Screen, Button, Chip } from '@/components/Primitives';
 import { getSettings, updateSettings, type AppSettings } from '@/store/settings';
 import { clearDebates } from '@/store/debateHistory';
-import { purchaseAdFree, restorePurchases, AD_FREE_PRICE } from '@/services/purchases';
+import {
+  purchaseAdFree,
+  purchasePremium,
+  restorePurchases,
+  AD_FREE_PRICE,
+  PREMIUM_PRICE,
+} from '@/services/purchases';
+import { debatesUsedToday, isUnlimited, FREE_DAILY_LIMIT } from '@/store/usage';
 import { JUDGE_VOICES, DEFAULT_VOICE_ID } from '@/constants/voices';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
+import { tapSelect } from '@/utils/haptics';
 
 const ROUND_OPTIONS = [1, 2, 3, 4, 5];
 const DURATION_OPTIONS = [15, 30, 60, 90];
@@ -25,6 +33,12 @@ export default function SettingsScreen() {
     await updateSettings(s);
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
+  };
+
+  const onBuyPremium = async () => {
+    const res = await purchasePremium();
+    if (res.ok) setS(getSettings());
+    Alert.alert('Premium', res.message);
   };
 
   const onBuyAdFree = async () => {
@@ -47,23 +61,72 @@ export default function SettingsScreen() {
   };
 
   const selectedVoice = s.elevenVoiceId || DEFAULT_VOICE_ID;
+  const unlimited = isUnlimited();
+  const usedToday = debatesUsedToday();
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Field label="Your plan">
+          {s.premium ? (
+            <Text style={styles.hint}>✨ Premium — unlimited debates & premium voices. Thank you!</Text>
+          ) : unlimited ? (
+            <Text style={styles.hint}>
+              Unlimited debates — running on your own Anthropic key.
+            </Text>
+          ) : (
+            <>
+              <Text style={styles.hint}>
+                Free plan: {usedToday}/{FREE_DAILY_LIMIT} debates today (resets daily). Go Premium
+                for unlimited debates, natural ElevenLabs voices, and no ads.
+              </Text>
+              <Button
+                label={`Go Premium — ${PREMIUM_PRICE}`}
+                onPress={onBuyPremium}
+              />
+            </>
+          )}
+        </Field>
+
+        <Field label="Your Anthropic key (optional)">
+          <Text style={styles.hint}>
+            Paste your own key for unlimited debates on your own account (free of the daily cap).
+            Get one at console.anthropic.com. Leave blank to use the free plan.
+          </Text>
+          <TextInput
+            value={s.anthropicKey}
+            onChangeText={(t) => set({ anthropicKey: t })}
+            placeholder="sk-ant-…"
+            placeholderTextColor={colors.text.disabled}
+            style={styles.keyInput}
+            autoCapitalize="none"
+            autoCorrect={false}
+            secureTextEntry
+          />
+        </Field>
+
         <Field label="Voice engine">
           <Text style={styles.hint}>
-            Premium voices are more natural; the device voice is free, instant, and works offline.
+            {s.premium
+              ? 'Premium voices are more natural; the device voice is free, instant, and works offline.'
+              : 'The device voice is free and instant. Natural ElevenLabs voices are a Premium feature.'}
           </Text>
           <View style={styles.row}>
-            <Pill
-              label="Premium (ElevenLabs)"
-              selected={s.ttsEngine !== 'device'}
-              onPress={() => set({ ttsEngine: 'elevenlabs' })}
+            <Chip
+              label={s.premium ? 'Premium (ElevenLabs)' : '🔒 ElevenLabs (Premium)'}
+              selected={s.premium && s.ttsEngine !== 'device'}
+              onPress={() =>
+                s.premium
+                  ? set({ ttsEngine: 'elevenlabs' })
+                  : Alert.alert(
+                      'Premium voices',
+                      'Natural ElevenLabs voices unlock with Premium. The free device voice is used until then.'
+                    )
+              }
             />
-            <Pill
+            <Chip
               label="Device (free, faster)"
-              selected={s.ttsEngine === 'device'}
+              selected={!s.premium || s.ttsEngine === 'device'}
               onPress={() => set({ ttsEngine: 'device' })}
             />
           </View>
@@ -77,10 +140,14 @@ export default function SettingsScreen() {
               return (
                 <Pressable
                   key={v.id}
-                  onPress={() => set({ elevenVoiceId: v.id })}
-                  style={[
+                  onPress={() => {
+                    tapSelect();
+                    set({ elevenVoiceId: v.id });
+                  }}
+                  style={({ pressed }) => [
                     styles.voiceRow,
                     { borderColor: active ? colors.pink : colors.border.pink },
+                    pressed && { opacity: 0.85 },
                   ]}
                 >
                   <View style={{ flex: 1 }}>
@@ -113,7 +180,7 @@ export default function SettingsScreen() {
         <Field label="Default rounds">
           <View style={styles.row}>
             {ROUND_OPTIONS.map((r) => (
-              <Pill
+              <Chip
                 key={r}
                 label={String(r)}
                 selected={s.defaultRounds === r}
@@ -129,12 +196,12 @@ export default function SettingsScreen() {
             The final verdict is always read.
           </Text>
           <View style={styles.row}>
-            <Pill
+            <Chip
               label="On"
               selected={s.readTurnSummaries}
               onPress={() => set({ readTurnSummaries: true })}
             />
-            <Pill
+            <Chip
               label="Off (faster)"
               selected={!s.readTurnSummaries}
               onPress={() => set({ readTurnSummaries: false })}
@@ -145,7 +212,7 @@ export default function SettingsScreen() {
         <Field label="Default turn duration">
           <View style={styles.row}>
             {DURATION_OPTIONS.map((d) => (
-              <Pill
+              <Chip
                 key={d}
                 label={`${d}s`}
                 selected={s.defaultTurnDuration === d}
@@ -189,33 +256,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Pill({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.pill,
-        {
-          backgroundColor: selected ? colors.pink : colors.bg.elevated,
-          borderColor: selected ? colors.pink : colors.border.pink,
-        },
-      ]}
-    >
-      <Text style={[styles.pillText, { color: selected ? colors.bg.void : colors.text.secondary }]}>
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
@@ -232,6 +272,17 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 13,
     color: colors.text.secondary,
+  },
+  keyInput: {
+    backgroundColor: colors.bg.surface,
+    borderWidth: 1,
+    borderColor: colors.border.pink,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 4,
+    color: colors.text.primary,
+    fontFamily: fonts.mono,
+    fontSize: 14,
   },
   voiceRow: {
     flexDirection: 'row',
@@ -257,15 +308,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
-  },
-  pill: {
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
-  pillText: {
-    fontSize: 14,
-    fontFamily: fonts.heading,
   },
 });

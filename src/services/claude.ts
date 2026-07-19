@@ -1,6 +1,6 @@
 import { FACT_CHECK_PROMPT, VERDICT_PROMPT, AI_DEBATER_PROMPT } from '@/constants/prompts';
 import { safeJsonParse } from '@/utils/json';
-import { resolveKey } from '@/store/settings';
+import { getSettings, resolveKey } from '@/store/settings';
 import { PROXY_URL, usingProxy } from '@/services/proxy';
 import type { Argument, AIDifficulty } from '@/types/debate';
 
@@ -19,8 +19,23 @@ async function callClaude(prompt: string, maxTokens: number, model = TURN_MODEL)
     messages: [{ role: 'user', content: prompt }],
   });
 
+  // A user's own key always calls Anthropic directly on their account — even
+  // when a proxy is configured — so their usage never touches the owner's key.
+  const userKey = getSettings().anthropicKey.trim();
+
   let res: Response;
-  if (usingProxy()) {
+  if (userKey) {
+    res = await fetch(ANTHROPIC_URL, {
+      method: 'POST',
+      headers: {
+        'x-api-key': userKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: payload,
+    });
+  } else if (usingProxy()) {
     res = await fetch(`${PROXY_URL}/api/anthropic`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },

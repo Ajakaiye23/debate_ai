@@ -13,6 +13,7 @@
 import { updateSettings } from '@/store/settings';
 
 export const AD_FREE_PRICE = '$4.99';
+export const PREMIUM_PRICE = '$4.99';
 
 export interface PurchaseOutcome {
   ok: boolean;
@@ -27,11 +28,26 @@ export async function purchaseAdFree(): Promise<PurchaseOutcome> {
   };
 }
 
+/** Premium = unlimited debates + ElevenLabs voices + no ads. */
+export async function purchasePremium(): Promise<PurchaseOutcome> {
+  // No store connection yet — do not grant the entitlement.
+  return {
+    ok: false,
+    message:
+      'Premium unlocks with the store release. For unlimited debates now, add your own Anthropic key in Settings.',
+  };
+}
+
 export async function restorePurchases(): Promise<PurchaseOutcome> {
   return { ok: false, message: 'Nothing to restore yet — purchases arrive with the store release.' };
 }
 
-/** Called by the purchase flow once a real transaction succeeds. */
+/** Called by the purchase flow once a real "remove ads" transaction succeeds. */
 export async function grantAdFree(): Promise<void> {
   await updateSettings({ adFree: true });
+}
+
+/** Called once a real premium transaction succeeds (premium also removes ads). */
+export async function grantPremium(): Promise<void> {
+  await updateSettings({ premium: true, adFree: true });
 }

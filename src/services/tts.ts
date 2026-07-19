@@ -23,7 +23,10 @@ function speakOnDevice(text: string): Promise<void> {
  * (device voices can't be per-player, but they're free and instant).
  */
 export async function speak(text: string, voiceOverride?: string): Promise<void> {
-  if (getSettings().ttsEngine === 'device') {
+  const s = getSettings();
+  // ElevenLabs is a premium voice. Non-premium users always get the free device
+  // voice, even if the setting still says 'elevenlabs'.
+  if (s.ttsEngine === 'device' || !s.premium) {
     return speakOnDevice(text);
   }
   return speakElevenLabs(text, voiceOverride);
