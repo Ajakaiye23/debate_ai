@@ -1,12 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getSettings, hasUserAnthropicKey } from '@/store/settings';
 
-// Free users get a capped number of debates per day (on the bundled/proxy key,
-// which the app owner pays for). Premium users and users who supply their own
-// Anthropic key are unlimited — premium pays for itself, and a BYO key runs on
-// the user's own account, so neither costs the owner anything.
+// Daily debate caps protect the owner's API key from being drained:
+//  - Free tier:   FREE_DAILY_LIMIT/day on the owner's key.
+//  - Premium:     PREMIUM_DAILY_LIMIT/day — high enough to feel unlimited, but a
+//                 fair-use ceiling so a single whale can't run up a huge bill.
+//  - Own API key: truly unlimited (runs on the user's account, not the owner's).
 
 export const FREE_DAILY_LIMIT = 10;
+export const PREMIUM_DAILY_LIMIT = 100;
 
 const KEY = 'debateai:usage';
 
@@ -47,22 +49,34 @@ function rollIfNeeded(): void {
   if (cache.date !== today()) cache = { date: today(), count: 0 };
 }
 
-/** True when the user isn't subject to the daily cap. */
-export function isUnlimited(): boolean {
-  return getSettings().premium || hasUserAnthropicKey();
+/** A BYO-key user runs on their own account — never counted, never capped. */
+function untracked(): boolean {
+  return hasUserAnthropicKey();
 }
 
-/** Debates used today (free tier). */
+/** Today's cap for this user. Infinity only for BYO-key users. */
+export function dailyLimit(): number {
+  if (untracked()) return Infinity;
+  return getSettings().premium ? PREMIUM_DAILY_LIMIT : FREE_DAILY_LIMIT;
+}
+
+/** True when the user runs on their own key (shown as "unlimited" in the UI). */
+export function isUnlimited(): boolean {
+  return untracked();
+}
+
+/** Debates used today (counts against free + premium caps). */
 export function debatesUsedToday(): number {
   rollIfNeeded();
   return cache.count;
 }
 
-/** Debates left today; Infinity for premium / BYO-key. */
+/** Debates left today; Infinity for BYO-key users. */
 export function debatesRemaining(): number {
-  if (isUnlimited()) return Infinity;
+  const limit = dailyLimit();
+  if (limit === Infinity) return Infinity;
   rollIfNeeded();
-  return Math.max(0, FREE_DAILY_LIMIT - cache.count);
+  return Math.max(0, limit - cache.count);
 }
 
 /** Whether the user may start another debate right now. */
@@ -70,9 +84,9 @@ export function canStartDebate(): boolean {
   return debatesRemaining() > 0;
 }
 
-/** Count a debate against today's allowance. No-op for unlimited users. */
+/** Count a debate against today's allowance. No-op only for BYO-key users. */
 export async function recordDebate(): Promise<void> {
-  if (isUnlimited()) return;
+  if (untracked()) return;
   rollIfNeeded();
   cache.count += 1;
   await persist();

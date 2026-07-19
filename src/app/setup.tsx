@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Screen, Button, Chip } from '@/components/Primitives';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { getSettings } from '@/store/settings';
-import { canStartDebate, recordDebate, FREE_DAILY_LIMIT } from '@/store/usage';
+import { canStartDebate, recordDebate, FREE_DAILY_LIMIT, PREMIUM_DAILY_LIMIT } from '@/store/usage';
 import { setPendingConfig } from '@/store/activeDebate';
 import { buildSegments } from '@/constants/format';
 import { JUDGE_VOICES } from '@/constants/voices';
@@ -59,14 +59,25 @@ export default function SetupScreen() {
 
   const start = () => {
     if (!canStartDebate()) {
-      Alert.alert(
-        'Daily limit reached',
-        `Free debates reset tomorrow (${FREE_DAILY_LIMIT}/day). For unlimited now, go Premium — or add your own Anthropic key in Settings.`,
-        [
-          { text: 'Not now', style: 'cancel' },
-          { text: 'Settings', onPress: () => router.push('/settings') },
-        ]
-      );
+      if (settings.premium) {
+        Alert.alert(
+          'Daily limit reached',
+          `You've hit today's fair-use limit (${PREMIUM_DAILY_LIMIT} debates/day). It resets tomorrow — or add your own Anthropic key in Settings for no limit.`,
+          [
+            { text: 'OK', style: 'cancel' },
+            { text: 'Settings', onPress: () => router.push('/settings') },
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Daily limit reached',
+          `Free debates reset tomorrow (${FREE_DAILY_LIMIT}/day). For more now, go Premium — or add your own Anthropic key in Settings.`,
+          [
+            { text: 'Not now', style: 'cancel' },
+            { text: 'Settings', onPress: () => router.push('/settings') },
+          ]
+        );
+      }
       return;
     }
     recordDebate().catch(() => {});
