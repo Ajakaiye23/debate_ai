@@ -7,28 +7,49 @@ import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { tapLight } from '@/utils/haptics';
 import type { DebateMode, DebateFormat } from '@/types/debate';
 
+/** #RRGGBB + alpha (0–1) → rgba() string, for tinting per-mode accents. */
+function hexAlpha(hex: string, a: number): string {
+  const n = parseInt(hex.replace('#', ''), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
+
 const MODES: {
   mode: DebateMode;
   format?: DebateFormat;
   title: string;
   subtitle: string;
   icon: keyof typeof Ionicons.glyphMap;
+  accent: string;
   comingSoon?: boolean;
 }[] = [
-  { mode: 'pass-and-play', title: 'Pass & Play', subtitle: 'Same phone, quick rounds', icon: 'people' },
-  { mode: 'solo-vs-ai', title: 'Solo vs AI', subtitle: 'Debate against Rival', icon: 'hardware-chip' },
+  {
+    mode: 'pass-and-play',
+    title: 'Pass & Play',
+    subtitle: 'Same phone, quick rounds',
+    icon: 'people',
+    accent: colors.pink,
+  },
+  {
+    mode: 'solo-vs-ai',
+    title: 'Solo vs AI',
+    subtitle: 'Debate against Rival',
+    icon: 'hardware-chip',
+    accent: colors.sky,
+  },
   {
     mode: 'pass-and-play',
     format: 'formal',
     title: 'Formal Debate',
     subtitle: 'Opening · cross-exam · closing',
     icon: 'podium',
+    accent: colors.gold,
   },
   {
     mode: 'multiplayer',
     title: 'Online Multiplayer',
-    subtitle: 'Share a room code',
+    subtitle: 'Share a party code',
     icon: 'globe',
+    accent: colors.win,
   },
 ];
 
@@ -76,11 +97,18 @@ export default function HomeScreen() {
                 }}
                 style={({ pressed }) => [
                   styles.card,
+                  { borderColor: hexAlpha(m.accent, 0.28) },
                   pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
                 ]}
               >
-                <View style={styles.iconWrap}>
-                  <Ionicons name={m.icon} size={22} color={colors.pink} />
+                <View style={[styles.accentBar, { backgroundColor: m.accent }]} />
+                <View
+                  style={[
+                    styles.iconWrap,
+                    { backgroundColor: hexAlpha(m.accent, 0.12), borderColor: hexAlpha(m.accent, 0.35) },
+                  ]}
+                >
+                  <Ionicons name={m.icon} size={22} color={m.accent} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardTitle}>{m.title}</Text>
@@ -183,11 +211,20 @@ const styles = StyleSheet.create({
     borderColor: colors.border.pink,
     borderRadius: radius.xl,
     padding: spacing.md + 4,
+    paddingLeft: spacing.md + 10,
+    overflow: 'hidden',
     shadowColor: colors.glow.violet,
     shadowOpacity: 0.35,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
+  },
+  accentBar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
   },
   iconWrap: {
     width: 44,

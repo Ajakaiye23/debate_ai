@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, Alert, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Screen, Button, Chip } from '@/components/Primitives';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
@@ -116,6 +116,12 @@ export default function MultiplayerScreen() {
     setPhase('menu');
   };
 
+  const onShareCode = () => {
+    Share.share({
+      message: `Join my Debate Me party! Open the app → Online Multiplayer → Join, and enter code: ${code}`,
+    }).catch(() => {});
+  };
+
   if (!firebaseConfigured()) {
     return (
       <Screen>
@@ -146,8 +152,11 @@ export default function MultiplayerScreen() {
 
         {phase === 'menu' && (
           <>
-            <Button label="Create a room" onPress={onCreate} disabled={busy} />
-            <Section label="Join a room">
+            <Button label="Start a party" onPress={onCreate} disabled={busy} />
+            <Section label="Join a party">
+              <Text style={styles.body}>
+                In the same room or across the world — enter the host's 6-character code.
+              </Text>
               <TextInput
                 value={joinCode}
                 onChangeText={(t) => setJoinCode(t.toUpperCase())}
@@ -165,13 +174,14 @@ export default function MultiplayerScreen() {
         {phase === 'host' && (
           <>
             <View style={styles.codeBox}>
-              <Text style={styles.codeLabel}>Room code — share it</Text>
+              <Text style={styles.codeLabel}>Party code — share it</Text>
               <Text style={styles.code}>{code}</Text>
               <Text style={styles.body}>
                 {room?.players.player2
                   ? `${room.players.player2.name} joined. Set up the debate and start.`
-                  : 'Waiting for an opponent to join…'}
+                  : 'Read it out to someone next to you, or share it below.'}
               </Text>
+              <Button label="Share code" variant="secondary" onPress={onShareCode} />
             </View>
 
             <Section label="What do you want to debate?">

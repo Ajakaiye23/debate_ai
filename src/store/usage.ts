@@ -6,7 +6,7 @@ import { hasUserAnthropicKey } from '@/store/settings';
 // bill on the owner's shared key. Users who paste their own Anthropic key run on
 // their own account and are never counted or capped.
 
-export const DAILY_LIMIT = 100;
+export const DAILY_LIMIT = 10;
 
 const KEY = 'debateai:usage';
 
