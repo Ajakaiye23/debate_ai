@@ -53,7 +53,7 @@ export default function HomeScreen() {
         </View>
 
         <Animated.View entering={FadeIn.duration(400)} style={styles.hero}>
-          <Text style={styles.title}>DebateAI</Text>
+          <Text style={styles.title}>Debate Me</Text>
           <View style={styles.titleRule} />
           <Text style={styles.tagline}>
             Speak your case. Claude judges. The verdict is read aloud.

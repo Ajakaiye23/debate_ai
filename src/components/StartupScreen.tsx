@@ -61,7 +61,7 @@ export function StartupScreen({ onDone }: { onDone: () => void }) {
           resizeMode="contain"
         />
         <Animated.View style={[styles.textWrap, textStyle]}>
-          <Text style={styles.title}>DebateAI</Text>
+          <Text style={styles.title}>Debate Me</Text>
           <View style={styles.rule} />
           <Text style={styles.tagline}>Enter the arena</Text>
         </Animated.View>

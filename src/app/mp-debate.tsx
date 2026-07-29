@@ -9,7 +9,7 @@ import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useTimer } from '@/hooks/useTimer';
 import { transcribeAudio } from '@/services/whisper';
 import { factCheckArgument, getFinalVerdict } from '@/services/claude';
-import { speakText } from '@/services/elevenlabs';
+import { speak as speakText } from '@/services/tts';
 import { saveDebate } from '@/store/debateHistory';
 import { setLastSession, setLastSpokenVerdict } from '@/store/activeDebate';
 import { getDeviceId } from '@/store/identity';

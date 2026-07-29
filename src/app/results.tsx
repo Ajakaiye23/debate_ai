@@ -5,7 +5,6 @@ import { Screen, Button, Divider } from '@/components/Primitives';
 import { VerdictBanner } from '@/components/VerdictBanner';
 import { ScoreBreakdown } from '@/components/ScoreBreakdown';
 import { speak as speakTts } from '@/services/tts';
-import { maybeShowInterstitial } from '@/services/ads';
 import { notifySuccess } from '@/utils/haptics';
 import { getLastSession, getLastSpokenVerdict } from '@/store/activeDebate';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
@@ -23,8 +22,6 @@ export default function ResultsScreen() {
     if (!spoke.current) {
       spoke.current = true;
       notifySuccess(); // celebratory buzz as the verdict lands
-      // Post-debate interstitial (no-op until the ad SDK is wired + not adFree).
-      maybeShowInterstitial().catch(() => {});
       const toRead = getLastSpokenVerdict() ?? session.verdict;
       if (toRead) speakTts(toRead).catch(() => {});
     }
@@ -39,7 +36,7 @@ export default function ResultsScreen() {
 
   const onShare = () => {
     const lines = [
-      `DebateAI — "${session.topic}"`,
+      `Debate Me — "${session.topic}"`,
       isTie ? 'Result: Tie' : `Winner: ${winnerName}`,
       '',
       ...session.arguments.map(

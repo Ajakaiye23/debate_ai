@@ -1,21 +1,11 @@
 import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, Alert } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { Ionicons } from '@expo/vector-icons';
 import { Screen, Button, Chip } from '@/components/Primitives';
 import { getSettings, updateSettings, type AppSettings } from '@/store/settings';
 import { clearDebates } from '@/store/debateHistory';
-import {
-  purchaseAdFree,
-  purchasePremium,
-  restorePurchases,
-  AD_FREE_PRICE,
-  PREMIUM_PRICE,
-} from '@/services/purchases';
-import { debatesUsedToday, isUnlimited, FREE_DAILY_LIMIT } from '@/store/usage';
-import { JUDGE_VOICES, DEFAULT_VOICE_ID } from '@/constants/voices';
+import { debatesUsedToday, isUnlimited, DAILY_LIMIT } from '@/store/usage';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
-import { tapSelect } from '@/utils/haptics';
 
 const ROUND_OPTIONS = [1, 2, 3, 4, 5];
 const DURATION_OPTIONS = [15, 30, 60, 90];
@@ -35,24 +25,6 @@ export default function SettingsScreen() {
     setTimeout(() => setSaved(false), 1500);
   };
 
-  const onBuyPremium = async () => {
-    const res = await purchasePremium();
-    if (res.ok) setS(getSettings());
-    Alert.alert('Premium', res.message);
-  };
-
-  const onBuyAdFree = async () => {
-    const res = await purchaseAdFree();
-    if (res.ok) setS(getSettings());
-    Alert.alert('Remove ads', res.message);
-  };
-
-  const onRestore = async () => {
-    const res = await restorePurchases();
-    if (res.ok) setS(getSettings());
-    Alert.alert('Restore purchase', res.message);
-  };
-
   const onClearHistory = () => {
     Alert.alert('Clear history', 'Delete all saved debates?', [
       { text: 'Cancel', style: 'cancel' },
@@ -60,38 +32,24 @@ export default function SettingsScreen() {
     ]);
   };
 
-  const selectedVoice = s.elevenVoiceId || DEFAULT_VOICE_ID;
   const unlimited = isUnlimited();
   const usedToday = debatesUsedToday();
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Field label="Your plan">
-          {s.premium ? (
-            <Text style={styles.hint}>✨ Premium — unlimited debates & premium voices. Thank you!</Text>
-          ) : unlimited ? (
-            <Text style={styles.hint}>
-              Unlimited debates — running on your own Anthropic key.
-            </Text>
-          ) : (
-            <>
-              <Text style={styles.hint}>
-                Free plan: {usedToday}/{FREE_DAILY_LIMIT} debates today (resets daily). Go Premium
-                for unlimited debates, natural ElevenLabs voices, and no ads.
-              </Text>
-              <Button
-                label={`Go Premium — ${PREMIUM_PRICE}`}
-                onPress={onBuyPremium}
-              />
-            </>
-          )}
+        <Field label="Debates today">
+          <Text style={styles.hint}>
+            {unlimited
+              ? 'Unlimited — running on your own Anthropic key.'
+              : `${usedToday}/${DAILY_LIMIT} used today (resets daily). Add your own Anthropic key below for no limit.`}
+          </Text>
         </Field>
 
         <Field label="Your Anthropic key (optional)">
           <Text style={styles.hint}>
-            Paste your own key for unlimited debates on your own account (free of the daily cap).
-            Get one at console.anthropic.com. Leave blank to use the free plan.
+            Paste your own key to run debates on your own account with no daily limit.
+            Get one at console.anthropic.com. Leave blank to use the shared free allowance.
           </Text>
           <TextInput
             value={s.anthropicKey}
@@ -105,67 +63,7 @@ export default function SettingsScreen() {
           />
         </Field>
 
-        <Field label="Voice engine">
-          <Text style={styles.hint}>
-            {s.premium
-              ? 'Premium voices are more natural; the device voice is free, instant, and works offline.'
-              : 'The device voice is free and instant. Natural ElevenLabs voices are a Premium feature.'}
-          </Text>
-          <View style={styles.row}>
-            <Chip
-              label={s.premium ? 'Premium (ElevenLabs)' : '🔒 ElevenLabs (Premium)'}
-              selected={s.premium && s.ttsEngine !== 'device'}
-              onPress={() =>
-                s.premium
-                  ? set({ ttsEngine: 'elevenlabs' })
-                  : Alert.alert(
-                      'Premium voices',
-                      'Natural ElevenLabs voices unlock with Premium. The free device voice is used until then.'
-                    )
-              }
-            />
-            <Chip
-              label="Device (free, faster)"
-              selected={!s.premium || s.ttsEngine === 'device'}
-              onPress={() => set({ ttsEngine: 'device' })}
-            />
-          </View>
-        </Field>
-
-        <Field label="Judge voice">
-          <Text style={styles.hint}>Pick who reads the verdicts aloud.</Text>
-          <View style={{ gap: spacing.sm }}>
-            {JUDGE_VOICES.map((v) => {
-              const active = selectedVoice === v.id;
-              return (
-                <Pressable
-                  key={v.id}
-                  onPress={() => {
-                    tapSelect();
-                    set({ elevenVoiceId: v.id });
-                  }}
-                  style={({ pressed }) => [
-                    styles.voiceRow,
-                    { borderColor: active ? colors.pink : colors.border.pink },
-                    pressed && { opacity: 0.85 },
-                  ]}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.voiceName}>{v.name}</Text>
-                    <Text style={styles.voicePersona}>{v.persona}</Text>
-                  </View>
-                  <Ionicons
-                    name={active ? 'radio-button-on' : 'radio-button-off'}
-                    size={22}
-                    color={active ? colors.pink : colors.text.disabled}
-                  />
-                </Pressable>
-              );
-            })}
-          </View>
-        </Field>
-
-        <Field label={`Judge volume — ${Math.round(s.judgeVolume * 100)}%`}>
+        <Field label={`Voice volume — ${Math.round(s.judgeVolume * 100)}%`}>
           <Slider
             minimumValue={0}
             maximumValue={1}
@@ -222,24 +120,6 @@ export default function SettingsScreen() {
           </View>
         </Field>
 
-        <Field label="Ads">
-          {s.adFree ? (
-            <Text style={styles.hint}>Ads removed — thanks for supporting DebateAI! 💜</Text>
-          ) : (
-            <>
-              <Text style={styles.hint}>
-                A short ad plays after each debate. Remove them forever with a one-time purchase.
-              </Text>
-              <Button
-                label={`Remove ads — ${AD_FREE_PRICE}`}
-                variant="secondary"
-                onPress={onBuyAdFree}
-              />
-              <Button label="Restore purchase" variant="ghost" onPress={onRestore} />
-            </>
-          )}
-        </Field>
-
         <Button label={saved ? 'Saved ✓' : 'Save settings'} onPress={save} />
         <Button label="Clear history" variant="ghost" onPress={onClearHistory} />
       </ScrollView>
@@ -283,26 +163,6 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontFamily: fonts.mono,
     fontSize: 14,
-  },
-  voiceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.bg.surface,
-    borderWidth: 1,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-  },
-  voiceName: {
-    fontFamily: fonts.heading,
-    fontSize: 16,
-    color: colors.text.primary,
-  },
-  voicePersona: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.text.secondary,
-    marginTop: 2,
   },
   row: {
     flexDirection: 'row',

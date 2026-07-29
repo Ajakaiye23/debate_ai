@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "DebateAI",
+    "name": "Debate Me",
     "slug": "debate_ai",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,7 +13,7 @@
       "bundleIdentifier": "com.ajakaiye.debateai",
       "buildNumber": "1",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "DebateAI records your spoken arguments to transcribe and judge them."
+        "NSMicrophoneUsageDescription": "Debate Me records your spoken arguments to transcribe and judge them."
       }
     },
     "android": {
@@ -45,15 +45,15 @@
       [
         "expo-audio",
         {
-          "microphonePermission": "DebateAI records your spoken arguments to transcribe and judge them."
+          "microphonePermission": "Debate Me records your spoken arguments to transcribe and judge them."
         }
       ],
       "expo-asset",
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "DebateAI listens to your spoken arguments to transcribe and judge them.",
-          "speechRecognitionPermission": "DebateAI transcribes your spoken arguments on-device so the judge can score them."
+          "microphonePermission": "Debate Me listens to your spoken arguments to transcribe and judge them.",
+          "speechRecognitionPermission": "Debate Me transcribes your spoken arguments on-device so the judge can score them."
         }
       ]
     ],

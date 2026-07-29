@@ -4,10 +4,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Screen, Button, Chip } from '@/components/Primitives';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { getSettings } from '@/store/settings';
-import { canStartDebate, recordDebate, FREE_DAILY_LIMIT, PREMIUM_DAILY_LIMIT } from '@/store/usage';
+import { canStartDebate, recordDebate, DAILY_LIMIT } from '@/store/usage';
 import { setPendingConfig } from '@/store/activeDebate';
 import { buildSegments } from '@/constants/format';
-import { JUDGE_VOICES } from '@/constants/voices';
 import type { DebateMode, DebateFormat, AIDifficulty, Player } from '@/types/debate';
 
 const ROUND_OPTIONS = [1, 2, 3, 4, 5];
@@ -59,68 +58,38 @@ export default function SetupScreen() {
 
   const start = () => {
     if (!canStartDebate()) {
-      if (settings.premium) {
-        Alert.alert(
-          'Daily limit reached',
-          `You've hit today's fair-use limit (${PREMIUM_DAILY_LIMIT} debates/day). It resets tomorrow — or add your own Anthropic key in Settings for no limit.`,
-          [
-            { text: 'OK', style: 'cancel' },
-            { text: 'Settings', onPress: () => router.push('/settings') },
-          ]
-        );
-      } else {
-        Alert.alert(
-          'Daily limit reached',
-          `Free debates reset tomorrow (${FREE_DAILY_LIMIT}/day). For more now, go Premium — or add your own Anthropic key in Settings.`,
-          [
-            { text: 'Not now', style: 'cancel' },
-            { text: 'Settings', onPress: () => router.push('/settings') },
-          ]
-        );
-      }
+      Alert.alert(
+        'Daily limit reached',
+        `You've hit today's limit of ${DAILY_LIMIT} debates. It resets tomorrow — or add your own Anthropic key in Settings for no limit.`,
+        [
+          { text: 'OK', style: 'cancel' },
+          { text: 'Settings', onPress: () => router.push('/settings') },
+        ]
+      );
       return;
     }
     recordDebate().catch(() => {});
 
     const fmt: DebateFormat = isFormal ? 'formal' : 'quick';
     const p2Side: 'for' | 'against' = p1Side === 'for' ? 'against' : 'for';
-    // Voices are assigned silently (never shown in the UI) so speakers can't
-    // tell which read-back voice maps to whom until they hear it.
-    const voice = (i: number) => (isFormal ? JUDGE_VOICES[i % JUDGE_VOICES.length].id : undefined);
     const player1: Player = {
       id: 'player1',
       name: p1Name.trim(),
       side: p1Side,
-      voiceId: voice(0),
       team: is2v2 ? 0 : undefined,
     };
     const player2: Player = {
       id: isSolo ? 'ai' : 'player2',
       name: p2Name.trim(),
       side: p2Side,
-      voiceId: voice(1),
       team: is2v2 ? 1 : undefined,
       isAI: isSolo || (is2v2 && p2AI) || undefined,
     };
     const players: Player[] = [player1, player2];
     if (is2v2) {
       players.push(
-        {
-          id: 'player3',
-          name: a2Name.trim(),
-          side: p1Side,
-          voiceId: voice(2),
-          team: 0,
-          isAI: a2AI || undefined,
-        },
-        {
-          id: 'player4',
-          name: b2Name.trim(),
-          side: p2Side,
-          voiceId: voice(3),
-          team: 1,
-          isAI: b2AI || undefined,
-        }
+        { id: 'player3', name: a2Name.trim(), side: p1Side, team: 0, isAI: a2AI || undefined },
+        { id: 'player4', name: b2Name.trim(), side: p2Side, team: 1, isAI: b2AI || undefined }
       );
     }
     const anyAI = players.some((p) => p.isAI);

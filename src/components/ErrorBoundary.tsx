@@ -25,7 +25,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error) {
     // Keep a breadcrumb in the dev console; no crash reporter wired yet.
-    console.warn('[DebateAI] caught render error:', error?.message ?? error);
+    console.warn('[DebateMe] caught render error:', error?.message ?? error);
   }
 
   reset = () => this.setState({ error: null });

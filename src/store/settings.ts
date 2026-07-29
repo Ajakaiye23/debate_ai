@@ -5,29 +5,19 @@ const KEY = 'debateai:settings';
 export interface AppSettings {
   anthropicKey: string;
   openaiKey: string;
-  elevenLabsKey: string;
-  elevenVoiceId: string;
-  judgeVolume: number; // 0–1
+  judgeVolume: number; // 0–1, device voice volume
   defaultRounds: number;
   defaultTurnDuration: number; // seconds
   readTurnSummaries: boolean; // false = skip per-turn TTS (faster debates); final verdict is always read
-  adFree: boolean; // true after the one-time "remove ads" purchase
-  premium: boolean; // unlimited debates + ElevenLabs voices + no ads
-  ttsEngine: 'elevenlabs' | 'device'; // device = free built-in voice, instant + offline
 }
 
 const DEFAULTS: AppSettings = {
   anthropicKey: '',
   openaiKey: '',
-  elevenLabsKey: '',
-  elevenVoiceId: '',
   judgeVolume: 1,
   defaultRounds: 3,
   defaultTurnDuration: 30,
   readTurnSummaries: true,
-  adFree: false,
-  premium: false,
-  ttsEngine: 'elevenlabs',
 };
 
 // In-memory cache so services can read keys synchronously.
@@ -58,7 +48,7 @@ export async function updateSettings(patch: Partial<AppSettings>): Promise<AppSe
 
 /** Reads a key, preferring the user-entered value over the bundled env var. */
 export function resolveKey(
-  field: 'anthropicKey' | 'openaiKey' | 'elevenLabsKey' | 'elevenVoiceId',
+  field: 'anthropicKey' | 'openaiKey',
   envValue: string | undefined
 ): string {
   return cache[field] || envValue || '';

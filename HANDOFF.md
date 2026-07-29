@@ -139,6 +139,20 @@ was removed; keys come from `.env`.
 - See `OWNER_GUIDE.md` for the human-required launch checklist (rewritten for an iPhone owner:
   Part A = free Expo Go path, Part B = paid standalone via TestFlight).
 
+**Simplified to free + device-voice only (2026-07-08, round 4):**
+- **Renamed to "Debate Me"** (display strings + app.json name + permission strings; bundle id,
+  slug, repo/folder unchanged).
+- **All monetization removed** — deleted `services/ads.ts` + `services/purchases.ts`, the ads/
+  premium settings + UI, the interstitial. Single free tier for everyone.
+- **ElevenLabs removed entirely** — deleted `services/elevenlabs.ts` + `constants/voices.ts`;
+  `tts.ts` is device-voice only (`expo-speech`). Dropped `Player.voiceId`, the per-speaker voice
+  assignment, `elevenLabsKey`/`elevenVoiceId`/`ttsEngine` settings, and the voice-picker UI.
+  (Server `/api/tts` endpoint is now unused but left in place, harmless.)
+- **Cost cut**: everything runs on Haiku now (`claude-haiku-4-5-20251001`) — dropped the pricier
+  Sonnet verdict call. ~a few cents/debate, device voice free.
+- Cost guardrails kept as non-monetary abuse protection: single `DAILY_LIMIT = 100`/day cap
+  ([usage.ts](src/store/usage.ts)) + BYO Anthropic key (unlimited, runs on user's account).
+
 **Cost-control model (2026-07-08):** free tier is capped so the owner's key can't be drained.
 - `src/store/usage.ts` — per-day debate counter (local date rollover), `FREE_DAILY_LIMIT = 10`.
   `canStartDebate()`/`recordDebate()` enforced in `setup.tsx` (paywall alert on cap). `initUsage()`

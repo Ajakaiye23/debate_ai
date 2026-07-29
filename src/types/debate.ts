@@ -6,7 +6,6 @@ export interface Player {
   id: string; // 'player1' | 'player2' | 'ai' | 'player3' | 'player4'
   name: string;
   side: 'for' | 'against';
-  voiceId?: string; // ElevenLabs voice for reading this player's verdicts (formal mode)
   team?: 0 | 1; // team index for 2v2 formal debates
   isAI?: boolean; // this speaker's turns are argued by Claude
 }

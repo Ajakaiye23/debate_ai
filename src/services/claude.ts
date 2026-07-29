@@ -4,18 +4,16 @@ import { getSettings, resolveKey } from '@/store/settings';
 import { PROXY_URL, usingProxy } from '@/services/proxy';
 import type { Argument, AIDifficulty } from '@/types/debate';
 
-// Per-turn scoring runs on Haiku (fast + ~3x cheaper — it's called every turn);
-// the final verdict + coaching stays on Sonnet where judgment quality shows most.
-const TURN_MODEL = 'claude-haiku-4-5-20251001';
-const VERDICT_MODEL = 'claude-sonnet-4-6';
+// Everything runs on Haiku — fast and the cheapest capable model. Judging and
+// verdicts are short structured-JSON tasks it handles well, keeping per-debate
+// cost to a few cents.
+const MODEL = 'claude-haiku-4-5-20251001';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
-async function callClaude(prompt: string, maxTokens: number, model = TURN_MODEL): Promise<string> {
+async function callClaude(prompt: string, maxTokens: number, model = MODEL): Promise<string> {
   const payload = JSON.stringify({
     model,
     max_tokens: maxTokens,
-    // effort is only supported on Sonnet/Opus-tier models — Haiku rejects it.
-    ...(model === VERDICT_MODEL ? { output_config: { effort: 'medium' } } : {}),
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -117,7 +115,7 @@ export async function getFinalVerdict(
   teamNames?: [string, string]
 ): Promise<VerdictResult> {
   // Coaching adds a paragraph per speaker (up to 4 in 2v2) — needs more room.
-  const text = await callClaude(VERDICT_PROMPT(topic, allArguments, teamNames), 2048, VERDICT_MODEL);
+  const text = await callClaude(VERDICT_PROMPT(topic, allArguments, teamNames), 2048);
   return safeJsonParse<VerdictResult>(text);
 }
 

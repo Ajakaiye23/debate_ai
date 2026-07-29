@@ -118,7 +118,7 @@ function DebateRunner({ config }: { config: NonNullable<ReturnType<typeof getPen
     }
     setPhase('speaking');
     try {
-      await speakTts(text, debateRef.current.currentPlayer.voiceId);
+      await speakTts(text);
     } catch {
       // ignore TTS failure — verdict is still on screen
     }
