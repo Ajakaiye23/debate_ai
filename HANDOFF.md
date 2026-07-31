@@ -139,6 +139,14 @@ was removed; keys come from `.env`.
 - See `OWNER_GUIDE.md` for the human-required launch checklist (rewritten for an iPhone owner:
   Part A = free Expo Go path, Part B = paid standalone via TestFlight).
 
+**Sound effects added (2026-07-08, round 5):** 12 CC0 sounds (owner-picked from the
+Gemini-curated Kenney packs), converted ogg→m4a via Pin_Pull's ffmpeg-static.
+`src/services/sounds.ts` = pooled expo-audio player with gain balancing / cooldowns /
+subtle pitch variation, gated by the new `soundEffects` setting (Settings toggle).
+Loaded at startup. Wired: gavel+winner sting on results, card+fallacy on ArgumentCard,
+countdown/record_start/submit/mic_fail in debate flow, tap/select in Button/Chip primitives,
+'start' on the CTA, 'back' on quit/Home. Mapping in `assets/sounds/SOURCES.md`.
+
 **Simplified to free + device-voice only (2026-07-08, round 4):**
 - **Renamed to "Debate Me"** (display strings + app.json name + permission strings; bundle id,
   slug, repo/folder unchanged).

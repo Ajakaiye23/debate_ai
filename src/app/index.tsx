@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Primitives';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { tapLight } from '@/utils/haptics';
+import { playSound } from '@/services/sounds';
 import type { DebateMode, DebateFormat } from '@/types/debate';
 
 /** #RRGGBB + alpha (0–1) → rgba() string, for tinting per-mode accents. */
@@ -63,6 +64,7 @@ export default function HomeScreen() {
           <Pressable
             onPress={() => {
               tapLight();
+              playSound('tap');
               router.push('/settings');
             }}
             hitSlop={12}
@@ -88,6 +90,7 @@ export default function HomeScreen() {
               <Pressable
                 onPress={() => {
                   tapLight();
+              playSound('tap');
                   m.mode === 'multiplayer'
                     ? router.push('/multiplayer')
                     : router.push({
@@ -124,6 +127,7 @@ export default function HomeScreen() {
           <Pressable
             onPress={() => {
               tapLight();
+              playSound('tap');
               router.push('/history');
             }}
             style={({ pressed }) => [styles.historyBtn, pressed && { opacity: 0.85 }]}
@@ -136,6 +140,7 @@ export default function HomeScreen() {
           <Pressable
             onPress={() => {
               tapLight();
+              playSound('tap');
               router.push('/leaderboard');
             }}
             style={({ pressed }) => [styles.historyBtn, pressed && { opacity: 0.85 }]}

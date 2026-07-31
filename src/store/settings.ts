@@ -9,6 +9,7 @@ export interface AppSettings {
   defaultRounds: number;
   defaultTurnDuration: number; // seconds
   readTurnSummaries: boolean; // false = skip per-turn TTS (faster debates); final verdict is always read
+  soundEffects: boolean; // UI + gameplay sound effects
 }
 
 const DEFAULTS: AppSettings = {
@@ -18,6 +19,7 @@ const DEFAULTS: AppSettings = {
   defaultRounds: 3,
   defaultTurnDuration: 30,
   readTurnSummaries: true,
+  soundEffects: true,
 };
 
 // In-memory cache so services can read keys synchronously.

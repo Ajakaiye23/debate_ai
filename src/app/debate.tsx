@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { notifyWarning, tapLight } from '@/utils/haptics';
+import { playSound } from '@/services/sounds';
 import { Screen, Button } from '@/components/Primitives';
 import { TimerBar } from '@/components/TimerBar';
 import { ArgumentCard } from '@/components/ArgumentCard';
@@ -148,6 +149,7 @@ function DebateRunner({ config }: { config: NonNullable<ReturnType<typeof getPen
     if (busyRef.current) return;
     busyRef.current = true;
     timer.stop();
+    playSound('submit');
     setPhase('processing');
     let text: string | null = null;
     if (deviceSttRef.current) {
@@ -178,6 +180,7 @@ function DebateRunner({ config }: { config: NonNullable<ReturnType<typeof getPen
   const submitTyped = async () => {
     const t = typedText.trim();
     if (!t) return;
+    playSound('submit');
     setPhase('processing');
     const text = await debateRef.current.submitTypedTurn(t);
     setTypedText('');
@@ -255,9 +258,22 @@ function DebateRunner({ config }: { config: NonNullable<ReturnType<typeof getPen
     if (flowPhase === 'recording' && timer.timeLeft === 10) notifyWarning();
   }, [flowPhase, timer.timeLeft]);
 
-  // Light tick the moment a turn goes live, so the speaker feels "go".
+  // Countdown ticks on the last 3 seconds of the ready phase.
   useEffect(() => {
-    if (flowPhase === 'recording') tapLight();
+    if (flowPhase === 'ready' && timer.timeLeft >= 1 && timer.timeLeft <= 3) playSound('countdown');
+  }, [flowPhase, timer.timeLeft]);
+
+  // "Go" cue the moment a turn goes live.
+  useEffect(() => {
+    if (flowPhase === 'recording') {
+      tapLight();
+      playSound('record_start');
+    }
+  }, [flowPhase]);
+
+  // Soft error cue when a turn couldn't be captured.
+  useEffect(() => {
+    if (flowPhase === 'retry') playSound('mic_fail');
   }, [flowPhase]);
 
   useEffect(() => {
@@ -266,6 +282,7 @@ function DebateRunner({ config }: { config: NonNullable<ReturnType<typeof getPen
 
   /** Abandon the debate. Confirms first — progress is lost. */
   const confirmQuit = useCallback(() => {
+    playSound('back');
     timer.pause();
     Alert.alert('Leave debate?', 'This debate will be discarded. Nothing is saved.', [
       { text: 'Keep debating', style: 'cancel', onPress: () => timer.resume() },

@@ -8,6 +8,7 @@ import Animated, {
 import { useEffect } from 'react';
 import type { Argument } from '@/types/debate';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
+import { playSound } from '@/services/sounds';
 import { ScorePill } from './ScorePill';
 
 /** Shows a transcribed argument with its scores. Slides up on mount. */
@@ -18,7 +19,10 @@ export function ArgumentCard({ arg }: { arg: Argument }) {
   useEffect(() => {
     slide.value = withSpring(0, { damping: 18, stiffness: 120 });
     opacity.value = withTiming(1, { duration: 250 });
-  }, [slide, opacity]);
+    playSound('card');
+    if (arg.fallacies?.length) setTimeout(() => playSound('fallacy'), 260);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const style = useAnimatedStyle(() => ({
     transform: [{ translateY: slide.value }],

@@ -2,6 +2,7 @@ import { Pressable, Text, View, StyleSheet, type ViewStyle } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { tapLight, tapSelect } from '@/utils/haptics';
+import { playSound, type SoundName } from '@/services/sounds';
 import { DuskBackground } from './DuskBackground';
 
 /** Root screen wrapper with the glowing Neon Dusk backdrop. */
@@ -24,12 +25,14 @@ export function Button({
   variant = 'primary',
   disabled,
   style,
+  sound = 'tap',
 }: {
   label: string;
   onPress: () => void;
   variant?: ButtonVariant;
   disabled?: boolean;
   style?: ViewStyle;
+  sound?: SoundName; // which SFX to play on press (default: 'tap')
 }) {
   const palette: Record<ButtonVariant, { bg: string; fg: string; border?: string }> = {
     primary: { bg: colors.pink, fg: colors.bg.void },
@@ -39,7 +42,10 @@ export function Button({
   const p = palette[variant];
 
   const handlePress = () => {
-    if (!disabled) tapLight();
+    if (!disabled) {
+      tapLight();
+      playSound(sound);
+    }
     onPress();
   };
 
@@ -77,6 +83,7 @@ export function Chip({
 }) {
   const handlePress = () => {
     tapSelect();
+    playSound('select');
     onPress();
   };
 

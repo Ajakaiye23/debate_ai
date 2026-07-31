@@ -75,6 +75,17 @@ export default function SettingsScreen() {
           />
         </Field>
 
+        <Field label="Sound effects">
+          <View style={styles.row}>
+            <Chip label="On" selected={s.soundEffects} onPress={() => set({ soundEffects: true })} />
+            <Chip
+              label="Off"
+              selected={!s.soundEffects}
+              onPress={() => set({ soundEffects: false })}
+            />
+          </View>
+        </Field>
+
         <Field label="Default rounds">
           <View style={styles.row}>
             {ROUND_OPTIONS.map((r) => (

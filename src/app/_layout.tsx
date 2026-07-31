@@ -13,6 +13,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { initSettings } from '@/store/settings';
 import { initIdentity } from '@/store/identity';
 import { initUsage } from '@/store/usage';
+import { loadSounds } from '@/services/sounds';
 import { colors } from '@/constants/theme';
 import { StartupScreen } from '@/components/StartupScreen';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -32,7 +33,7 @@ export default function RootLayout() {
   useEffect(() => {
     // Usage init must run after settings (it reads premium / user-key state).
     initSettings()
-      .then(() => Promise.all([initIdentity(), initUsage()]))
+      .then(() => Promise.all([initIdentity(), initUsage(), loadSounds()]))
       .finally(() => setSettingsReady(true));
   }, []);
 

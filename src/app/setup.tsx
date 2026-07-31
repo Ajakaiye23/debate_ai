@@ -310,6 +310,7 @@ export default function SetupScreen() {
           label="Start Debate"
           onPress={start}
           disabled={!canStart}
+          sound="start"
           style={{ marginTop: spacing.md }}
         />
       </ScrollView>

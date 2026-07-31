@@ -6,6 +6,7 @@ import { VerdictBanner } from '@/components/VerdictBanner';
 import { ScoreBreakdown } from '@/components/ScoreBreakdown';
 import { speak as speakTts } from '@/services/tts';
 import { notifySuccess } from '@/utils/haptics';
+import { playSound } from '@/services/sounds';
 import { getLastSession, getLastSpokenVerdict } from '@/store/activeDebate';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 
@@ -21,9 +22,13 @@ export default function ResultsScreen() {
     }
     if (!spoke.current) {
       spoke.current = true;
+      // Gavel, then (if there's a winner) a sting, then the spoken verdict.
+      playSound('verdict');
       notifySuccess(); // celebratory buzz as the verdict lands
+      const tie = session.winner === 'tie';
+      if (!tie) setTimeout(() => playSound('winner'), 420);
       const toRead = getLastSpokenVerdict() ?? session.verdict;
-      if (toRead) speakTts(toRead).catch(() => {});
+      if (toRead) setTimeout(() => speakTts(toRead).catch(() => {}), tie ? 500 : 1100);
     }
   }, [session, router]);
 
@@ -107,7 +112,7 @@ export default function ResultsScreen() {
               })
             }
           />
-          <Button label="Home" onPress={() => router.replace('/')} />
+          <Button label="Home" sound="back" onPress={() => router.replace('/')} />
         </View>
       </ScrollView>
     </Screen>
