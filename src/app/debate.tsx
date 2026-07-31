@@ -336,6 +336,7 @@ function DebateRunner({ config }: { config: NonNullable<ReturnType<typeof getPen
         <View style={styles.topRow}>
           <Pressable
             onPress={confirmQuit}
+            android_disableSound
             hitSlop={10}
             style={styles.pauseBtn}
             accessibilityRole="button"

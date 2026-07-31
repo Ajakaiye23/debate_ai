@@ -62,6 +62,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Pressable
+            android_disableSound
             onPress={() => {
               tapLight();
               playSound('tap');
@@ -88,6 +89,7 @@ export default function HomeScreen() {
           {MODES.map((m, i) => (
             <Animated.View key={m.title} entering={FadeInDown.delay(80 * i + 120).springify()}>
               <Pressable
+                android_disableSound
                 onPress={() => {
                   tapLight();
               playSound('tap');
@@ -125,6 +127,7 @@ export default function HomeScreen() {
 
         <View style={styles.footerRow}>
           <Pressable
+            android_disableSound
             onPress={() => {
               tapLight();
               playSound('tap');
@@ -138,6 +141,7 @@ export default function HomeScreen() {
             <Text style={styles.historyText}>History</Text>
           </Pressable>
           <Pressable
+            android_disableSound
             onPress={() => {
               tapLight();
               playSound('tap');

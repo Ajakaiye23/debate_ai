@@ -53,6 +53,7 @@ export function Button({
     <Pressable
       onPress={handlePress}
       disabled={disabled}
+      android_disableSound
       style={({ pressed }) => [
         styles.button,
         variant === 'primary' && !disabled && styles.primaryGlow,
@@ -90,6 +91,7 @@ export function Chip({
   return (
     <Pressable
       onPress={handlePress}
+      android_disableSound
       style={({ pressed }) => [
         styles.chip,
         {
