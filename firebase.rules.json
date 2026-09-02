@@ -1,0 +1,101 @@
+{
+  "//": [
+    "Firebase Realtime Database security rules for Debate Me.",
+    "",
+    "Paste these into Firebase Console → Realtime Database → Rules → Publish.",
+    "They replace the default 'test mode' rules, which allow anyone on the",
+    "internet to read every room and overwrite any player's rating.",
+    "",
+    "There are no user accounts in this app, so these rules cannot prove WHO is",
+    "writing. What they can do — and what they do here — is constrain WHAT may be",
+    "written: correct shape, correct types, sane sizes, and no deleting other",
+    "people's data wholesale. That turns 'anyone can do anything' into 'anyone can",
+    "only make well-formed moves'.",
+    "",
+    "To lock writes to their true owner, enable Anonymous Authentication and",
+    "replace the players write rule with: \"$deviceId === auth.uid\"."
+  ],
+
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "rooms": {
+      "$code": {
+        "//": "Room codes are 6 uppercase letters/digits. Readable by anyone who knows the code (that's the join mechanic); writable only as a valid room.",
+        ".read": "$code.length === 6",
+        ".write": "$code.length === 6",
+        ".validate": "newData.hasChildren(['topic', 'status', 'host']) || !newData.exists()",
+
+        "topic": { ".validate": "newData.isString() && newData.val().length <= 300" },
+        "status": { ".validate": "newData.isString() && newData.val().matches(/^(config|active|complete)$/)" },
+        "host": { ".validate": "newData.isString() && newData.val().length <= 64" },
+        "code": { ".validate": "newData.isString() && newData.val().length === 6" },
+        "rounds": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 10" },
+        "turnDuration": { ".validate": "newData.isNumber() && newData.val() >= 5 && newData.val() <= 600" },
+        "currentIndex": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+        "winnerName": { ".validate": "newData.isString() && newData.val().length <= 64" },
+
+        "players": {
+          "$slot": {
+            ".validate": "$slot.matches(/^player[12]$/)",
+            "name": { ".validate": "newData.isString() && newData.val().length <= 24" },
+            "deviceId": { ".validate": "newData.isString() && newData.val().length <= 64" },
+            "side": { ".validate": "newData.isString() && newData.val().matches(/^(for|against)$/)" },
+            "eloAtStart": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000" },
+            "$other": { ".validate": false }
+          }
+        },
+
+        "args": {
+          "$index": {
+            "//": "One scored argument. Transcripts are capped so a room can't be used as free storage.",
+            "transcript": { ".validate": "newData.isString() && newData.val().length <= 5000" },
+            "playerName": { ".validate": "newData.isString() && newData.val().length <= 64" },
+            "playerId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "label": { ".validate": "newData.isString() && newData.val().length <= 64" },
+            "factCheckNotes": { ".validate": "newData.isString() && newData.val().length <= 2000" },
+            "spokenSummary": { ".validate": "newData.isString() && newData.val().length <= 2000" },
+            "round": { ".validate": "newData.isNumber()" },
+            "winner": { ".validate": "newData.isBoolean()" },
+            "scores": {
+              "$metric": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10" }
+            }
+          }
+        },
+
+        "verdict": {
+          "winner": { ".validate": "newData.isString() && newData.val().length <= 64" },
+          "reason": { ".validate": "newData.isString() && newData.val().length <= 2000" },
+          "spokenVerdict": { ".validate": "newData.isString() && newData.val().length <= 2000" }
+        },
+
+        "segments": {
+          "$index": {
+            "playerIndex": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3" },
+            "round": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 20" },
+            "label": { ".validate": "newData.isString() && newData.val().length <= 64" },
+            "$other": { ".validate": false }
+          }
+        }
+      }
+    },
+
+    "players": {
+      "//": "Leaderboard. Anyone may read it; each record must be a well-formed rating.",
+      ".read": true,
+
+      "$deviceId": {
+        "//": "Swap this .write for \"$deviceId === auth.uid\" once Anonymous Auth is on.",
+        ".write": "$deviceId.length <= 64",
+        ".validate": "newData.hasChildren(['name', 'elo'])",
+
+        "name": { ".validate": "newData.isString() && newData.val().length <= 24" },
+        "elo": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000" },
+        "wins": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "losses": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

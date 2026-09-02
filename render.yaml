@@ -1,17 +1,40 @@
+# Deploy config for the backend proxy (the server that holds the API keys).
+#
+# On render.com: New → Blueprint → point it at this repo. Render reads this file
+# and creates the service. You then paste the secret values in the dashboard —
+# they are never committed to the repo.
+#
+# `sync: false` means "ask me for this value in the dashboard".
+
 services:
   - type: web
-    name: debateai-proxy
+    name: debateme-proxy
     runtime: node
     rootDir: server
     plan: free
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /
     envVars:
+      # Your Anthropic key — this is what the app's judging runs on.
       - key: ANTHROPIC_API_KEY
         sync: false
+
+      # Your OpenAI key — only needed for cloud speech-to-text. The app falls
+      # back to free on-device speech recognition, so this is optional.
       - key: OPENAI_API_KEY
         sync: false
-      - key: ELEVENLABS_API_KEY
+
+      # Shared password between the app and this server. Invent a long random
+      # string, paste it here, and put the SAME value in the app's .env as
+      # EXPO_PUBLIC_APP_KEY. Without it the proxy URL is open to anyone.
+      - key: APP_KEY
         sync: false
+
+      # Max requests per IP per minute.
       - key: RATE_LIMIT_MAX
         value: "20"
+
+      # Redirect http → https and send HSTS. Render terminates TLS for you.
+      - key: FORCE_HTTPS
+        value: "1"

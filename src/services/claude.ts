@@ -1,7 +1,13 @@
-import { FACT_CHECK_PROMPT, VERDICT_PROMPT, AI_DEBATER_PROMPT } from '@/constants/prompts';
+import {
+  FACT_CHECK_PROMPT,
+  VERDICT_PROMPT,
+  AI_DEBATER_PROMPT,
+  PRACTICE_DRILL_PROMPT,
+  PRACTICE_FEEDBACK_PROMPT,
+} from '@/constants/prompts';
 import { safeJsonParse } from '@/utils/json';
 import { getSettings, resolveKey } from '@/store/settings';
-import { PROXY_URL, usingProxy } from '@/services/proxy';
+import { PROXY_URL, usingProxy, proxyHeaders } from '@/services/proxy';
 import type { Argument, AIDifficulty } from '@/types/debate';
 
 // Everything runs on Haiku — fast and the cheapest capable model. Judging and
@@ -36,7 +42,7 @@ async function callClaude(prompt: string, maxTokens: number, model = MODEL): Pro
   } else if (usingProxy()) {
     res = await fetch(`${PROXY_URL}/api/anthropic`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: proxyHeaders(),
       body: payload,
     });
   } else {
@@ -127,4 +133,43 @@ export async function getAIArgument(
 ): Promise<string> {
   const text = await callClaude(AI_DEBATER_PROMPT(topic, side, history, difficulty), 512);
   return text.trim();
+}
+
+// --- Practice drills -------------------------------------------------------
+// Used by the practice screen to train one weak skill at a time.
+
+export interface PracticeDrill {
+  scenario: string;
+  task: string;
+  hint: string;
+}
+
+/** Asks the coach to invent one short exercise aimed at a single skill. */
+export async function getPracticeDrill(
+  skill: string,
+  skillMeaning: string
+): Promise<PracticeDrill> {
+  const text = await callClaude(PRACTICE_DRILL_PROMPT(skill, skillMeaning), 512);
+  return safeJsonParse<PracticeDrill>(text);
+}
+
+export interface PracticeFeedback {
+  score: number;
+  didWell: string;
+  improve: string;
+  rewrite: string;
+}
+
+/** Grades an attempt against the one skill it was meant to train. */
+export async function scorePracticeAttempt(
+  skill: string,
+  skillMeaning: string,
+  drill: PracticeDrill,
+  attempt: string
+): Promise<PracticeFeedback> {
+  const text = await callClaude(
+    PRACTICE_FEEDBACK_PROMPT(skill, skillMeaning, drill.scenario, drill.task, attempt),
+    768
+  );
+  return safeJsonParse<PracticeFeedback>(text);
 }

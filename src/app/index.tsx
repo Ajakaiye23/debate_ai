@@ -1,11 +1,14 @@
+import { useCallback, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Primitives';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { tapLight } from '@/utils/haptics';
 import { playSound } from '@/services/sounds';
+import { loadDebates } from '@/store/debateHistory';
+import { computeProgress, SKILL_LABELS, type ProgressReport } from '@/services/progress';
 import type { DebateMode, DebateFormat } from '@/types/debate';
 
 /** #RRGGBB + alpha (0–1) → rgba() string, for tinting per-mode accents. */
@@ -56,6 +59,14 @@ const MODES: {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [report, setReport] = useState<ProgressReport | null>(null);
+
+  // Refresh on every visit so finishing a debate updates the strip immediately.
+  useFocusEffect(
+    useCallback(() => {
+      loadDebates().then((sessions) => setReport(computeProgress(sessions)));
+    }, [])
+  );
 
   return (
     <Screen>
@@ -79,10 +90,47 @@ export default function HomeScreen() {
         <Animated.View entering={FadeIn.duration(400)} style={styles.hero}>
           <Text style={styles.title}>Debate Me</Text>
           <View style={styles.titleRule} />
-          <Text style={styles.tagline}>
-            Speak your case. Claude judges. The verdict is read aloud.
-          </Text>
+          <Text style={styles.tagline}>Say your piece. Get judged. Settle it.</Text>
         </Animated.View>
+
+        {/* Your own numbers, not a static menu — this is what makes the home
+            screen feel like your app rather than a template. Hidden until
+            there's real data so a first launch isn't a row of zeroes. */}
+        {report && report.totalDebates > 0 && (
+          <Animated.View entering={FadeIn.duration(500)} style={styles.formStrip}>
+            <Pressable
+              android_disableSound
+              onPress={() => {
+                tapLight();
+                playSound('tap');
+                router.push('/progress');
+              }}
+              style={styles.formInner}
+              accessibilityRole="button"
+              accessibilityLabel="Your progress"
+            >
+              <View style={styles.formItem}>
+                <Text style={styles.formValue}>{report.totalDebates}</Text>
+                <Text style={styles.formLabel}>debates</Text>
+              </View>
+              <View style={styles.formDivider} />
+              <View style={styles.formItem}>
+                <Text style={styles.formValue}>
+                  {report.strongest ? report.strongest.average.toFixed(1) : '—'}
+                </Text>
+                <Text style={styles.formLabel}>best score</Text>
+              </View>
+              <View style={styles.formDivider} />
+              <View style={[styles.formItem, { flex: 1.4 }]}>
+                <Text style={[styles.formValue, styles.formFocus]} numberOfLines={1}>
+                  {report.weakest ? SKILL_LABELS[report.weakest.skill] : 'Keep going'}
+                </Text>
+                <Text style={styles.formLabel}>working on</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.text.disabled} />
+            </Pressable>
+          </Animated.View>
+        )}
 
         <Text style={styles.kicker}>Choose your arena</Text>
         <View style={{ gap: spacing.md }}>
@@ -145,6 +193,20 @@ export default function HomeScreen() {
             onPress={() => {
               tapLight();
               playSound('tap');
+              router.push('/progress');
+            }}
+            style={({ pressed }) => [styles.historyBtn, pressed && { opacity: 0.85 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Your progress and skills"
+          >
+            <Ionicons name="stats-chart-outline" size={18} color={colors.sky} />
+            <Text style={styles.historyText}>Progress</Text>
+          </Pressable>
+          <Pressable
+            android_disableSound
+            onPress={() => {
+              tapLight();
+              playSound('tap');
               router.push('/leaderboard');
             }}
             style={({ pressed }) => [styles.historyBtn, pressed && { opacity: 0.85 }]}
@@ -152,7 +214,7 @@ export default function HomeScreen() {
             accessibilityLabel="Leaderboard"
           >
             <Ionicons name="trophy-outline" size={18} color={colors.sky} />
-            <Text style={styles.historyText}>Leaderboard</Text>
+            <Text style={styles.historyText}>Ranks</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -203,6 +265,33 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     marginBottom: -spacing.sm,
   },
+  // "Your form" strip — the personal stats row under the title.
+  formStrip: {
+    backgroundColor: colors.bg.surface,
+    borderWidth: 1,
+    borderColor: colors.border.sky,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+  },
+  formInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
+  },
+  formItem: { flex: 1, alignItems: 'center' },
+  formValue: { fontFamily: fonts.display, fontSize: 18, color: colors.sky },
+  formFocus: { fontSize: 14, color: colors.gold },
+  formLabel: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginTop: 1,
+  },
+  formDivider: { width: 1, height: 26, backgroundColor: colors.border.pink },
   tagline: {
     fontFamily: fonts.body,
     fontSize: 14,
@@ -259,7 +348,7 @@ const styles = StyleSheet.create({
   footerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: spacing.xl,
+    gap: spacing.lg,
     marginTop: 'auto',
   },
   historyBtn: {

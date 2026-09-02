@@ -68,6 +68,8 @@ export default function RootLayout() {
           <Stack.Screen name="multiplayer" options={{ title: 'Online Multiplayer' }} />
           <Stack.Screen name="mp-debate" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen name="leaderboard" options={{ title: 'Leaderboard' }} />
+          <Stack.Screen name="progress" options={{ title: 'Your Progress' }} />
+          <Stack.Screen name="practice" options={{ title: 'Practice' }} />
         </Stack>
       </ErrorBoundary>
       {!introDone && <StartupScreen onDone={() => setIntroDone(true)} />}

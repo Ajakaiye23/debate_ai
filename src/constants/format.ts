@@ -1,14 +1,38 @@
 import type { DebateFormat, Segment } from '@/types/debate';
 
 /**
- * Builds the ordered list of segments for a debate.
- * - quick:  rounds × [player1, player2]
- * - formal 1v1: Opening (each speaks) → Cross-examination (a real Q&A exchange:
- *           P1 questions → P2 responds → P2 questions → P1 responds, so the two
- *           voices alternate and you can tell who's speaking) → Closing.
- * - formal 2v2 (playerCount 4, indices 0=A1, 1=B1, 2=A2, 3=B2):
- *           first speakers open and cross-examine, second speakers give the
- *           constructive + their own cross-ex, and second speakers close.
+ * THE SEGMENT ENGINE — the core idea behind how a debate is structured.
+ *
+ * The problem: a quick 3-round match and a formal 2v2 debate look nothing alike.
+ * Rounds repeat; a formal debate doesn't (opening → cross-ex → closing, each a
+ * different kind of turn). My first version tracked "which round" and "whose
+ * turn" as two separate counters, and every new format meant more if-statements
+ * scattered through the debate screen.
+ *
+ * The fix: describe *any* debate as a flat, ordered list of segments — one entry
+ * per turn, saying who speaks and what kind of turn it is. The debate screen
+ * then does something very simple: walk the list from index 0 to the end. It
+ * never needs to know which format it's running.
+ *
+ * That means adding a new format is just adding a new list here, and nothing in
+ * the rest of the app has to change. It's also what made 2v2 possible without
+ * rewriting the debate screen.
+ *
+ * The three formats this builds:
+ *  - quick:      rounds × [player1, player2] — a simple back-and-forth.
+ *  - formal 1v1: Opening (each) → Cross-examination → Closing. The cross-ex is a
+ *                real exchange (P1 asks → P2 answers → P2 asks → P1 answers)
+ *                rather than two separate speeches, so speakers alternate and
+ *                you can follow who is challenging whom.
+ *  - formal 2v2: indices are 0 = TeamA speaker1, 1 = TeamB speaker1,
+ *                2 = TeamA speaker2, 3 = TeamB speaker2. First speakers open and
+ *                cross-examine; second speakers give the constructive, run their
+ *                own cross-ex, and deliver the closings.
+ *
+ * @param format      'quick' or 'formal'
+ * @param rounds      how many rounds (only used by 'quick')
+ * @param playerCount 2 for 1v1, 4 for 2v2 team debates
+ * @returns the full running order of the debate, start to finish
  */
 export function buildSegments(
   format: DebateFormat,

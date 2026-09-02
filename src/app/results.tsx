@@ -8,6 +8,7 @@ import { speak as speakTts } from '@/services/tts';
 import { notifySuccess } from '@/utils/haptics';
 import { playSound } from '@/services/sounds';
 import { getLastSession, getLastSpokenVerdict } from '@/store/activeDebate';
+import { weakestSkillOf, SKILL_LABELS } from '@/services/progress';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 
 export default function ResultsScreen() {
@@ -38,6 +39,11 @@ export default function ResultsScreen() {
   const winnerName = isTie
     ? ''
     : (session.winnerLabel ?? (session.winner as { name: string }).name);
+
+  // Which skill did this player score lowest on in this debate? That's what the
+  // "practice" button below targets, so the offer is about the debate they just
+  // finished rather than a generic drill.
+  const weakestSkill = weakestSkillOf(session);
 
   const onShare = () => {
     const lines = [
@@ -98,6 +104,17 @@ export default function ResultsScreen() {
         )}
 
         <View style={styles.actions}>
+          {/* The loop closes here: right after seeing the verdict is when someone
+              actually wants to fix the thing they just lost points on. */}
+          {weakestSkill && (
+            <Button
+              label={`Practice your ${SKILL_LABELS[weakestSkill].toLowerCase()}`}
+              onPress={() =>
+                router.push({ pathname: '/practice', params: { skill: weakestSkill } })
+              }
+            />
+          )}
+          <Button label="See your progress" variant="secondary" onPress={() => router.push('/progress')} />
           <Button label="Share scorecard" variant="secondary" onPress={onShare} />
           <Button
             label="Rematch"

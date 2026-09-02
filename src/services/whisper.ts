@@ -1,6 +1,6 @@
 import * as LegacyFS from 'expo-file-system/legacy';
 import { resolveKey } from '@/store/settings';
-import { PROXY_URL, usingProxy } from '@/services/proxy';
+import { PROXY_URL, usingProxy, proxyHeaders } from '@/services/proxy';
 
 /**
  * Transcribes a recorded audio file via OpenAI Whisper — directly (bundled key)
@@ -24,8 +24,8 @@ export async function transcribeAudio(audioUri: string): Promise<string> {
     });
     res = await fetch(`${PROXY_URL}/api/transcribe`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ audioBase64, name, type }),
+      headers: proxyHeaders(),
+      body: JSON.stringify({ audioBase64 }),
     });
   } else {
     const key = resolveKey('openaiKey', process.env.EXPO_PUBLIC_OPENAI_API_KEY);

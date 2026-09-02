@@ -81,3 +81,59 @@ ${history || '(you are opening the debate)'}
 Respond with ONLY your spoken argument in plain text. 30-60 seconds when read aloud.
 No JSON. No labels. Just the argument as if you are speaking.
 `;
+
+/**
+ * PRACTICE DRILLS — the "train your weakest skill" half of the app.
+ *
+ * These two prompts work as a pair. The first asks the AI to invent a short
+ * exercise aimed at one specific skill; the second grades the attempt against
+ * that same skill only. Keeping them narrow is deliberate: a drill that scored
+ * everything at once would just be another debate, and the point of practice is
+ * to work on one thing.
+ */
+export const PRACTICE_DRILL_PROMPT = (skill: string, skillMeaning: string) => `
+You are a debate coach. Create ONE short practice exercise that trains a single
+skill: ${skill} (${skillMeaning}).
+
+The exercise must be answerable in 30-60 seconds of speaking, self-contained,
+and must force the student to use ${skill} specifically — not general debating.
+
+Pick a fresh, concrete, everyday topic. Avoid politics and anything graphic.
+
+Respond ONLY with valid JSON (no markdown, no code fences):
+{
+  "scenario": "<2-3 sentences setting up the situation the student is responding to>",
+  "task": "<one sentence telling the student exactly what to do>",
+  "hint": "<one short tip on what a strong answer does, without giving the answer>"
+}
+`;
+
+export const PRACTICE_FEEDBACK_PROMPT = (
+  skill: string,
+  skillMeaning: string,
+  scenario: string,
+  task: string,
+  attempt: string
+) => `
+You are a debate coach grading one focused practice attempt.
+
+Skill being trained: ${skill} (${skillMeaning})
+Scenario given: ${scenario}
+Task given: ${task}
+
+The student's attempt:
+"""
+${attempt}
+"""
+
+Judge ONLY how well they used ${skill}. Ignore unrelated weaknesses.
+Be encouraging but specific and honest — a real number they can move.
+
+Respond ONLY with valid JSON (no markdown, no code fences):
+{
+  "score": <1-10, how well they used ${skill}>,
+  "didWell": "<the strongest single thing about the attempt, 1 sentence>",
+  "improve": "<the one change that would most improve it, 1-2 sentences>",
+  "rewrite": "<a stronger version of their answer in 2-3 sentences, showing rather than telling>"
+}
+`;
