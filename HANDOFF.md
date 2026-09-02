@@ -294,3 +294,35 @@ parts worth showing a judge) and `SECURITY.md`.
 
 All verified: `tsc --noEmit` clean, `expo export --platform android` clean.
 Practice loop and progress dashboard are **not yet runtime-tested on a phone**.
+
+---
+
+## Moving to a new device
+
+The code lives at **github.com/Ajakaiye23/debate_ai**. On the new machine:
+
+```bash
+git clone https://github.com/Ajakaiye23/debate_ai.git
+cd debate_ai
+npm install
+npx expo start --tunnel
+```
+
+**Three things are deliberately NOT in the repo** and must be handled by hand:
+
+1. **`.env` (your API keys).** Gitignored on purpose — never commit it. Copy the
+   file across yourself (USB stick, password manager, or a private note). Do not
+   paste keys into a chat window. `.env.example` lists the variable names.
+2. **`nodejs/`** — the portable Node install. It's Windows-x64 specific and
+   would be wrong on another machine. On the new device install Node normally
+   from nodejs.org (v20+), and `npx` will just work without `start.cmd`.
+3. **`node_modules/`** — reinstalled by `npm install`.
+
+`start.cmd` assumes the bundled `nodejs/` folder and the old absolute path, so
+it will not work on the new machine as-is. Either install Node system-wide and
+run `npx expo start --tunnel` directly, or edit the path inside `start.cmd`.
+
+**Context for a new chat session:** this file plus `CODE_TOUR.md` (how the code
+is organised), `SECURITY.md` (what's protected), and `OWNER_GUIDE.md` (the
+step-by-step task list) together capture everything. Paste this file into a new
+session to bring it up to speed.
