@@ -155,7 +155,7 @@ export default function MultiplayerScreen() {
             <Button label="Start a party" onPress={onCreate} disabled={busy} />
             <Section label="Join a party">
               <Text style={styles.body}>
-                In the same room or across the world — enter the host's 6-character code.
+                In the same room or across the world — enter the host&apos;s 6-character code.
               </Text>
               <TextInput
                 value={joinCode}

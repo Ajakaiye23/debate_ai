@@ -338,7 +338,7 @@ function MpRunner({ code, room }: { code: string; room: Room }) {
 
         {phase === 'typing' && (
           <View style={{ gap: spacing.sm }}>
-            <Text style={styles.kicker}>{me.name}'s argument</Text>
+            <Text style={styles.kicker}>{me.name}&apos;s argument</Text>
             <TextInput
               value={typedText}
               onChangeText={setTypedText}
