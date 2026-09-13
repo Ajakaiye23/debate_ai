@@ -5,6 +5,27 @@ app, the hard-won environment setup, what's built/tested, and what's left to shi
 
 ---
 
+## 0. Read this first — where later entries contradict each other
+
+This file is a running log, and some decisions below were reversed by later
+ones. When two sections disagree, this is what is actually true in the code:
+
+- **No ElevenLabs, no premium tier, no ads.** All three were removed (round 4).
+  Text-to-speech is the device voice (`expo-speech`) via `src/services/tts.ts`.
+  Sections that describe ElevenLabs voices, a `premium` flag, RevenueCat
+  products or `ttsEngine` describe code that no longer exists.
+- **The free cap is 10 debates/day**, `DAILY_LIMIT` in `src/store/usage.ts`.
+  (Section 5 says 100 in one place and 10 in another — 10 is correct.)
+- **Everything runs on `claude-haiku-4-5-20251001`.** No Sonnet call remains.
+- **The machine has changed.** There is no portable `nodejs/` folder any more —
+  Node is installed normally, and `start.cmd` now works with either. The old
+  `C:\Users\blkg2\debate_ai` paths below are historical.
+- **Expo stays on SDK 54.** See `AGENTS.md`.
+- For the current state of the app rather than its history, read `README.md`
+  and `CODE_TOUR.md`; for what the owner still has to do, `OWNER_GUIDE.md`.
+
+---
+
 ## 1. What the app is
 
 **DebateAI** — an Expo (Expo Router, TypeScript) **mobile** app at `C:\Users\blkg2\debate_ai`.

@@ -1,17 +1,40 @@
-import { Pressable, Text, View, StyleSheet, type ViewStyle } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Text,
+  View,
+  StyleSheet,
+  type ViewStyle,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { tapLight, tapSelect } from '@/utils/haptics';
 import { playSound, type SoundName } from '@/services/sounds';
 import { DuskBackground } from './DuskBackground';
 
-/** Root screen wrapper with the glowing Neon Dusk backdrop. */
+/**
+ * Root screen wrapper with the glowing Neon Dusk backdrop.
+ *
+ * It also lifts its contents clear of the on-screen keyboard. Several screens
+ * put a text box at the bottom — the typed-argument fallback, the practice
+ * drill, the topic field, the party code — and on iOS the keyboard simply
+ * covers whatever is under it, so you end up typing into a box you can't see
+ * with the submit button hidden behind the keys. Android resizes the window
+ * itself (softwareKeyboardLayoutMode defaults to "resize"), so it only needs
+ * the iOS behaviour. With no keyboard up this renders as a plain flex view.
+ */
 export function Screen({ children, style }: { children?: React.ReactNode; style?: ViewStyle }) {
   return (
     <View style={styles.root}>
       <DuskBackground />
       <SafeAreaView style={[styles.screen, style]} edges={['top', 'bottom']}>
-        {children}
+        <KeyboardAvoidingView
+          style={styles.screen}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          {children}
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );

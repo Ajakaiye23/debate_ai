@@ -60,8 +60,17 @@ const MIN_SAMPLES = 3;
  * We only analyse the device owner's own turns, not the opponent's — otherwise
  * a strong opponent would drag "your" numbers around. Player 1 is the owner in
  * Solo vs AI, and the first speaker in Pass & Play.
+ *
+ * Online matches are the exception: both devices save the same match, but the
+ * device that *joined* is seat 2, so the turns saved as 'player2' are theirs.
+ * mp-debate records that on the session, and we read it here — otherwise the
+ * guest's dashboard would grade them on their opponent's arguments.
  */
-const OWNER_ID = 'player1';
+const DEFAULT_OWNER_ID = 'player1';
+
+function ownerIdOf(session: DebateSession): string {
+  return session.ownerPlayerId ?? DEFAULT_OWNER_ID;
+}
 
 function mean(values: number[]): number {
   if (values.length === 0) return 0;
@@ -87,7 +96,7 @@ function trendOf(chronological: number[]): number {
  * Returns null if this debate has no scored turns of theirs.
  */
 export function weakestSkillOf(session: DebateSession): SkillKey | null {
-  const own = session.arguments.filter((a) => a.playerId === OWNER_ID);
+  const own = session.arguments.filter((a) => a.playerId === ownerIdOf(session));
   if (own.length === 0) return null;
 
   const averages: { skill: SkillKey; value: number }[] = [
@@ -120,8 +129,9 @@ export function computeProgress(sessions: DebateSession[]): ProgressReport {
   let totalTurns = 0;
 
   for (const session of chronological) {
+    const ownerId = ownerIdOf(session);
     for (const arg of session.arguments) {
-      if (arg.playerId !== OWNER_ID) continue;
+      if (arg.playerId !== ownerId) continue;
       totalTurns += 1;
       byskill.accuracy.push(arg.scores.accuracy);
       byskill.strength.push(arg.scores.strength);
@@ -143,7 +153,7 @@ export function computeProgress(sessions: DebateSession[]): ProgressReport {
   const ranked = skills.filter((s) => s.samples >= MIN_SAMPLES).sort((a, b) => a.average - b.average);
 
   const recent = sessions.slice(0, 5).map((session) => {
-    const own = session.arguments.filter((a) => a.playerId === OWNER_ID);
+    const own = session.arguments.filter((a) => a.playerId === ownerIdOf(session));
     const perTurn = own.map((a) => mean([a.scores.accuracy, a.scores.strength, a.scores.clarity]));
     return { topic: session.topic, date: session.createdAt, average: mean(perTurn) };
   });

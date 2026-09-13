@@ -8,8 +8,8 @@ the most interesting engineering.
 
 ## Where things live
 
-Everything I wrote is under `src/`. (`node_modules/` and `nodejs/` are
-downloaded dependencies — not my code.)
+Everything I wrote is under `src/`. (`node_modules/` is downloaded
+dependencies — not my code.)
 
 ```
 src/
@@ -162,7 +162,7 @@ retry instead of taking the app down. Every AI call goes through it.
 
 ```bash
 npm install
-npx expo start
+npx expo start --tunnel
 ```
 
 Then open it in Expo Go on a phone. `start.cmd` does the same thing on Windows

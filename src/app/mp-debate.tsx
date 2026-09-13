@@ -222,6 +222,9 @@ function MpRunner({ code, room }: { code: string; room: Room }) {
       arguments: r.args,
       verdict: r.verdict?.reason ?? '',
       winner: winnerPlayer,
+      // Both devices save this same match, but from opposite seats — record
+      // which one is ours so the progress dashboard scores the right person.
+      ownerPlayerId: `player${myIndex + 1}`,
       createdAt: Date.now(),
     };
     saveDebate(session).catch(() => {});
