@@ -9,6 +9,19 @@ Built with Expo (SDK 54) + Expo Router + React Native + TypeScript.
 *(The repo and bundle id are still `debate_ai` / `com.ajakaiye.debateai`; the app's
 display name is "Debate Me".)*
 
+## Start here
+
+Roughly 6,400 lines of TypeScript across `src/` (the app) and `server/` (a proxy
+that keeps the API keys out of the shipped app). If you only have a few minutes:
+
+| Read | For |
+|---|---|
+| [`CODE_TOUR.md`](CODE_TOUR.md) | How a debate flows through the code, and the three decisions worth explaining |
+| [`src/constants/format.ts`](src/constants/format.ts) | The segment engine — why one screen can run a quick match, a formal debate and a 2v2 with no special cases |
+| [`src/services/progress.ts`](src/services/progress.ts) | How past debates become "here is your weakest skill" — the thing this app does that a debate chatbot doesn't |
+| [`src/hooks/useDebateState.ts`](src/hooks/useDebateState.ts) | The state machine every turn passes through, and how each stage can fail safely |
+| [`src/utils/json.ts`](src/utils/json.ts) | Making language-model output safe to parse, so a malformed reply shows a retry instead of crashing |
+
 ## Modes
 
 - **Pass & Play** — two players on one phone, taking turns.
@@ -106,6 +119,7 @@ store/              app icon generator, privacy policy, store listing copy
 | File | What it's for |
 |---|---|
 | `OWNER_GUIDE.md` | Step-by-step, click-by-click task list for the owner (run it, Firebase, deploy, demo video) |
+| `DEMO_SCRIPT.md` | Shot-by-shot script for the 3-minute demo video, and what to set up before filming |
 | `CODE_TOUR.md` | How a debate flows through the code, and the design decisions worth explaining |
 | `SECURITY.md` | What's protected, what isn't, and why |
 | `HANDOFF.md` | Full session history + what is built vs. runtime-tested |
