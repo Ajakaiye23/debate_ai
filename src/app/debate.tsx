@@ -534,7 +534,7 @@ function Stage({
   if (flowPhase === 'typing') {
     return (
       <View style={{ gap: spacing.sm }}>
-        <Text style={styles.kicker}>{currentName}'s argument</Text>
+        <Text style={styles.kicker}>{currentName}&apos;s argument</Text>
         <TextInput
           value={typedText}
           onChangeText={onChangeTyped}

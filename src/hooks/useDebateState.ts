@@ -179,7 +179,7 @@ export function useDebateState(config: DebateConfig) {
     setSegmentIndex((i) => i + 1);
     setPhase('idle');
     return false;
-  }, [segmentIndex, totalSegments, config.topic]);
+  }, [segmentIndex, totalSegments, config.topic, config.teamNames]);
 
   const buildSession = useCallback((): DebateSession => {
     let winnerPlayer: Player | 'tie' = 'tie';

@@ -57,6 +57,13 @@ export interface DebateSession {
   verdict: string;
   winner: Player | 'tie';
   winnerLabel?: string; // display name for the winner (team name in 2v2)
+  /**
+   * Which player in `arguments` belongs to the person holding this device.
+   * Defaults to 'player1' (true for every on-device mode), but in an online
+   * match the joining device is seat 2, so progress analysis has to be told
+   * which turns are actually theirs. See services/progress.ts.
+   */
+  ownerPlayerId?: string;
   coaching?: CoachingTip[]; // per-player feedback from the judge
   createdAt: number;
 }

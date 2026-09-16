@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   FadeOut,
   Easing,

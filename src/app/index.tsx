@@ -140,13 +140,15 @@ export default function HomeScreen() {
                 android_disableSound
                 onPress={() => {
                   tapLight();
-              playSound('tap');
-                  m.mode === 'multiplayer'
-                    ? router.push('/multiplayer')
-                    : router.push({
-                        pathname: '/setup',
-                        params: { mode: m.mode, ...(m.format ? { format: m.format } : {}) },
-                      });
+                  playSound('tap');
+                  if (m.mode === 'multiplayer') {
+                    router.push('/multiplayer');
+                  } else {
+                    router.push({
+                      pathname: '/setup',
+                      params: { mode: m.mode, ...(m.format ? { format: m.format } : {}) },
+                    });
+                  }
                 }}
                 style={({ pressed }) => [
                   styles.card,

@@ -101,7 +101,7 @@ export default function SettingsScreen() {
 
         <Field label="Read turn scores aloud">
           <Text style={styles.hint}>
-            Off = faster debates: scores show on screen after each turn but aren't read aloud.
+            Off = faster debates: scores show on screen after each turn but aren&apos;t read aloud.
             The final verdict is always read.
           </Text>
           <View style={styles.row}>

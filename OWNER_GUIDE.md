@@ -182,6 +182,9 @@ published. Skip all of that unless you separately want it in the stores.
 
 ### Filming the demo
 
+**`DEMO_SCRIPT.md` is the full shooting script** — what to set up before you
+record, the shot list with timings, and what to leave out. The short version:
+
 Record your phone screen (iPhone: Settings → Control Centre → add **Screen
 Recording**). Suggested 3 minutes:
 
